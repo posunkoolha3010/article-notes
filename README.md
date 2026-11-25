@@ -1,26 +1,21 @@
-# Заметки по статьям
+# Article Notes
 
-Браузерная страница для работы с научными статьями: заметки по каждой статье, поиск, просмотр PDF с подсветкой цитат, переводчик.
+A web app for working through a folder of scientific PDFs: short notes on every paper, search across them, and a PDF viewer that jumps straight to the quoted passage and highlights it.
 
-**Данные тут не хранятся.** Программа пустая: все заметки лежат в файле `notes_data.json` на твоём компьютере, рядом со статьями. Сами PDF тоже остаются только на диске.
+- Notes as editable blocks: headings, bullets, coloured callouts, quotes tied to a PDF page, images pasted with Ctrl+V
+- Reading progress for every paper: unread / reading / read, with a progress bar
+- Search by words, authors, years and tags; filter by folder, importance and progress
+- Built-in PDF viewer (pdf.js): the article page only, zoom, fit to width, selectable text, the quote highlighted
+- Translator both ways, including text selected in the PDF
+- Dark theme
 
-## Как пользоваться
+All notes and PDFs stay on your own computer. Nothing is uploaded to this repository.
 
-1. Скачай `index.html` и папку `pdfjs/` и положи в папку со статьями.
-2. Открой `index.html` в Chrome.
-3. При первом запуске загрузи свой `notes_data.json` (или начни с пустого). Дальше страница помнит заметки сама.
-4. Нажми «Подключить папку со статьями» — после этого PDF открываются прямо на странице, на нужной странице и с подсветкой цитаты.
-5. Время от времени жми «Сохранить файл» — заметки запишутся обратно в `notes_data.json`.
+## Getting started
 
-## Что умеет
+1. Put `index.html` and the `pdfjs/` folder next to your PDFs.
+2. Open `index.html` in Chrome and load your `notes_data.json` — or start from an empty one.
+3. Connect the articles folder (button in the PDF panel) so PDFs open inside the page.
+4. Save the file now and then: notes are written back to `notes_data.json`.
 
-- заметки блоками: заголовки, пункты, цветные плашки, цитаты со ссылкой на страницу PDF, картинки через Ctrl+V;
-- шкала прочитанного: не читала / читаю / прочитано;
-- поиск по словам, авторам, годам, тегам; фильтры по папке и важности;
-- просмотр PDF (pdf.js): только страница статьи, масштаб, подсветка цитаты, выделение текста;
-- переводчик RU→EN и EN→RU, в том числе выделенного в PDF текста;
-- тёмная тема.
-
-## Лицензии
-
-Код страницы — свободно используй и меняй. В `pdfjs/` лежит [PDF.js](https://mozilla.github.io/pdf.js/) (Apache License 2.0).
+SDI · LAMMC — Department of Orchard Plant Genetics and Biotechnology
