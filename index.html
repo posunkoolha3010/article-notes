@@ -28,7 +28,7 @@ main{flex:1;display:grid;grid-template-columns:270px minmax(0,1fr) 0;min-height:
 main.pdf{grid-template-columns:270px minmax(0,1fr) minmax(0,1.25fr)}
 main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 #list{overflow:auto;border-right:1px solid var(--line);background:var(--surf)}
-#note{overflow:auto;padding:14px 20px 120px}
+#note{overflow:auto;padding:12px 14px 60px;background:var(--bg)}
 #pdf{border-left:1px solid var(--line);background:var(--surf2);display:flex;flex-direction:column;overflow:hidden}
 .filters{padding:7px 9px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:5px;background:var(--surf2);position:sticky;top:0;z-index:3}
 .filters select{padding:3px 5px;font-size:12px;max-width:124px}
@@ -39,7 +39,8 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 .dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:5px;border:1px solid var(--line2)}
 .d0{background:transparent}.d1{background:var(--warn);border-color:var(--warn)}.d2{background:var(--ok);border-color:var(--ok)}
 /* ---- редактор ---- */
-.doc{max-width:860px;margin-left:46px}
+.doc{max-width:900px;margin:0 auto;background:var(--surf);border:1px solid var(--line);border-radius:12px;
+ padding:16px 22px 34px 60px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .ttl{font:500 19px/1.35 inherit;margin:0 0 3px}
 .meta{color:var(--tx2);font-size:13px}
 .tags{margin:7px 0;display:flex;flex-wrap:wrap;gap:4px}
@@ -50,7 +51,7 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 .tag.addt{border-style:dashed;color:var(--tx3)}
 .tag.sel{background:var(--accbg);border-color:var(--acc);color:var(--acc)}
 .tagin{font-size:11.5px;padding:1px 6px;border:1px solid var(--acc);border-radius:5px;width:150px}
-.tb{position:sticky;top:0;z-index:5;background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:5px 6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:8px 0 12px}
+.tb{position:sticky;top:-2px;z-index:5;background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:5px 6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:8px 0 12px}
 .tb .sep{width:1px;height:20px;background:var(--line);margin:0 2px}
 .blk{position:relative;padding:3px 8px 3px 26px;border-radius:6px;outline:none;min-height:1.6em}
 .blk:hover{background:var(--surf2)}
@@ -73,9 +74,11 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 .sw:hover{border-color:var(--acc)}
 .qrow{display:flex;gap:6px;align-items:flex-start;margin:4px 0 4px 26px}
 .qrow .blk{flex:1;border-left:2px solid var(--acc);border-radius:0 6px 6px 0;background:var(--accbg);color:var(--acc);font-style:italic;font-size:13px;padding-left:10px}
+.qrow.plain .blk{border-left:0;background:transparent;color:inherit;font-style:normal;font-size:inherit;padding-left:8px}
 .qpg{width:62px;padding:2px 4px;font-size:12px}
-.gut{position:absolute;left:-46px;top:1px;display:none;gap:2px}
-.blk:hover .gut,.blk:focus .gut{display:flex}
+.bw{position:relative}
+.gut{position:absolute;left:-46px;top:3px;display:none;gap:2px;z-index:2}
+.bw:hover .gut,.bw:focus-within .gut{display:flex}
 .gut button{padding:0 4px;font-size:11px;line-height:1.5;border-radius:4px}
 .imgb{margin:8px 0 8px 26px;max-width:100%}
 .imgb img{max-width:100%;border:1px solid var(--line);border-radius:8px;display:block}
@@ -206,7 +209,7 @@ const TR={en:{
 'мельче этот блок':'smaller text in this block','крупнее этот блок':'bigger text in this block',
 'жирный':'bold','курсив':'italic','верхний индекс':'superscript','нижний индекс':'subscript','выделить цветом':'highlight',
 '+ блок':'+ block','добавить блок ниже':'add a block below','+ плашка':'+ colour block','добавить цветную плашку':'add a colour block',
-'+ цитата':'+ quote','добавить цитату со страницей':'add a quote with a page number','вставить символ или значок':'insert a symbol or icon',
+'+ цитата':'+ quote','добавить цитату со страницей':'add a quote with a page number','вставить символ или значок':'insert a symbol or icon','привязать блок к странице PDF':'link this block to a PDF page',
 'плашка: ':'colour: ','без цвета':'none','голубая':'blue','зелёная':'green','жёлтая':'yellow','розовая':'pink','сиреневая':'violet','бирюзовая':'teal','серая':'grey',
 'Значки':'Icons','Работа':'Work','Растения и холод':'Plants and cold','Стрелки':'Arrows','Наука':'Science','Знаки':'Signs',
 '+ добавить блок в конце':'+ add a block at the end','Переводчик':'Translator','Перевести заметку':'Translate the note',
@@ -250,7 +253,7 @@ const TR={en:{
 'мельче этот блок':'mažesnis šio bloko tekstas','крупнее этот блок':'didesnis šio bloko tekstas',
 'жирный':'pusjuodis','курсив':'kursyvas','верхний индекс':'viršutinis indeksas','нижний индекс':'apatinis indeksas','выделить цветом':'paryškinti spalva',
 '+ блок':'+ blokas','добавить блок ниже':'pridėti bloką žemiau','+ плашка':'+ spalvotas blokas','добавить цветную плашку':'pridėti spalvotą bloką',
-'+ цитата':'+ citata','добавить цитату со страницей':'pridėti citatą su puslapiu','вставить символ или значок':'įterpti simbolį ar ženklą',
+'+ цитата':'+ citata','добавить цитату со страницей':'pridėti citatą su puslapiu','вставить символ или значок':'įterpti simbolį ar ženklą','привязать блок к странице PDF':'susieti bloką su PDF puslapiu',
 'плашка: ':'spalva: ','без цвета':'be spalvos','голубая':'žydra','зелёная':'žalia','жёлтая':'geltona','розовая':'rožinė','сиреневая':'violetinė','бирюзовая':'turkio','серая':'pilka',
 'Значки':'Ženklai','Работа':'Darbas','Растения и холод':'Augalai ir šaltis','Стрелки':'Rodyklės','Наука':'Mokslas','Знаки':'Simboliai',
 '+ добавить блок в конце':'+ pridėti bloką pabaigoje','Переводчик':'Vertėjas','Перевести заметку':'Išversti užrašą',
@@ -296,7 +299,9 @@ function loadDoc(j){
   DOC=j; window.DOC=DOC;
   const MIG={call:'blue',ok:'green',warn:'yellow'};
   DOC.papers.forEach(p=>{p.status=p.status||0;
-    p.blocks.forEach(b=>{if(MIG[b.t]){b.c=b.c||MIG[b.t];b.t='p'}});
+    p.blocks.forEach(b=>{if(MIG[b.t]){b.c=b.c||MIG[b.t];b.t='p'}
+      if(typeof b.x==='string'&&/[\u2191\u2193\u2715]/.test(b.x))
+        b.x=b.x.replace(/(?:\u2191\u2193\u2715|\u2193\u2715|\u2191\u2715|\u2191\u2193)/g,'')});
     p._h=hay(p)});
   $('#boot').style.display='none'; buildFolders(); renderList();
   if(DOC.papers.length)open_(DOC.papers[0]);
@@ -373,6 +378,7 @@ const SYMS=[
  ['Знаки','± × ÷ ≈ ≠ ≤ ≥ ∼ ∞ ° ′ ″ ‰ √ ∑ ∫ ∆ · • ◦ ‣ § № † ‡ ¹ ² ³ ₀ ₁ ₂ ₃ ₄ ½ ¼ ¾ « » — – … ™ ©']
 ];
 let focusIdx=-1;
+const GUTJUNK=/(?:\u2191\u2193\u2715|\u2193\u2715|\u2191\u2715|\u2191\u2193)/g;
 const clean=h=>{const d=document.createElement('div');d.innerHTML=h;
   (function walk(n){[...n.childNodes].forEach(c=>{
     if(c.nodeType===1){const t=c.tagName.toLowerCase();
@@ -389,7 +395,7 @@ function blockEl(p,b,i){
     const e=E('div','blk '+(b.t==='quote'?'q':b.t)+(b.t==='h'&&/сети DHN/i.test(b.x||'')?' net':'')+(b.s?' s'+b.s:''));
     if(b.c)e.dataset.c=b.c;
     e.contentEditable='true';e.innerHTML=b.x||'';e.dataset.i=i;
-    e.oninput=()=>{b.x=clean(e.innerHTML);p._h=hay(p);save()};
+    e.oninput=()=>{b.x=clean(e.innerHTML).replace(GUTJUNK,'');p._h=hay(p);save()};
     e.onfocus=()=>{focusIdx=i};
     e.onpaste=ev=>{
       const it=[...(ev.clipboardData||{}).items||[]].find(x=>x.type.startsWith('image/'));
@@ -406,14 +412,15 @@ function blockEl(p,b,i){
     const up=E('button',null,'↑');up.onmousedown=ev=>{ev.preventDefault();if(i>0){[p.blocks[i-1],p.blocks[i]]=[p.blocks[i],p.blocks[i-1]];save();drawDoc(p,i-1)}};
     const dn=E('button',null,'↓');dn.onmousedown=ev=>{ev.preventDefault();if(i<p.blocks.length-1){[p.blocks[i+1],p.blocks[i]]=[p.blocks[i],p.blocks[i+1]];save();drawDoc(p,i+1)}};
     const rm=E('button',null,'✕');rm.onmousedown=ev=>{ev.preventDefault();p.blocks.splice(i,1);save();drawDoc(p,Math.max(0,i-1))};
-    g.append(up,dn,rm);e.append(g);return e};
-  if(b.t==='quote'){
-    const row=E('div','qrow');const e=mk();
+    g.append(up,dn,rm);e._gut=g;return e};
+  const wrap=(inner,g)=>{const w=E('div','bw');w.append(g,inner);return w};
+  if(b.t==='quote'||b.p){
+    const row=E('div','qrow'+(b.t==='quote'?'':' plain'));const e=mk();
     const pg=E('input','qpg');pg.type='number';pg.min=1;pg.value=b.p||1;pg.title=T('страница PDF');
     pg.onchange=()=>{b.p=+pg.value||1;save()};
     const go=E('button','mini',T('→ стр.'));go.onclick=()=>openPdf(p,b.p||1,e.textContent);
-    row.append(e,pg,go);return row}
-  return mk();
+    row.append(e,pg,go);return wrap(row,e._gut)}
+  const el=mk();return wrap(el,el._gut);
 }
 function shrink(dataUrl,cb){const im=new Image();im.onload=()=>{const m=900,s=Math.min(1,m/im.width);
   const c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;
@@ -443,6 +450,10 @@ function toolbar(p){
     b.onmousedown=ev=>ev.preventDefault();
     b.onclick=()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];if(v)bl.c=v;else delete bl.c;save();drawDoc(p,focusIdx)};
     tb.append(b)});
+  add('→ стр.',T('привязать блок к странице PDF'),()=>{
+    if(focusIdx<0)return;const bl=p.blocks[focusIdx];
+    if(bl.p&&bl.t!=='quote')delete bl.p; else bl.p=(typeof curPg!=='undefined'&&curPg)||1;
+    save();drawDoc(p,focusIdx)});
   add('Ω',T('вставить символ или значок'),e=>{
     const sb=$('#symbox');if(sb.style.display==='block'){sb.style.display='none';return}
     sb.textContent='';
@@ -750,6 +761,9 @@ const CHANGELOG=[
   'Переводчик на английский, литовский и русский — заметки, вставленный текст и выделенное в PDF',
   '153 символа и значка в шести группах (наука, стрелки, растения и холод, рабочие значки)',
   'Интерфейс на русском, английском и литовском',
+  'Ссылку на страницу PDF теперь можно повесить на любой блок, не только на цитату: кнопка «→ стр.» в панели привязывает блок к открытой странице',
+  'Исправлено: кнопки блока (↑ ↓ ✕) попадали в текст заметки при правке — теперь они вне текста, а уже попавшие символы вычищаются при открытии',
+  'Заметки теперь в рамке: текст лежит на белой карточке, видно, где начинается и кончается область заметок',
   'Заметки хранятся в твоём файле notes_data.json на компьютере: сама программа пустая, на GitHub твоих данных нет',
   'Исправлено: выделение текста в PDF ложилось мимо строк; строка поиска дёргалась при сохранении; кнопки блока налезали на текст'],
  en:['Notes page: 138 papers from the folder, search by words, authors, years and keywords, filters by folder, importance and reading progress',
@@ -762,6 +776,9 @@ const CHANGELOG=[
   'Translator into English, Lithuanian and Russian — notes, pasted text and text selected in the PDF',
   '153 symbols and icons in six groups (science, arrows, plants and cold, work icons)',
   'Interface in Russian, English and Lithuanian',
+  'A PDF page link can now be attached to any block, not only to a quote: the “→ page” button ties the block to the page you have open',
+  'Fixed: the block buttons (↑ ↓ ✕) ended up inside the note text while editing — they now live outside the text, and stray symbols are cleaned up on load',
+  'The notes now sit in a framed card, so it is clear where the notes area begins and ends',
   'Notes live in your own notes_data.json on your computer: the app itself is empty and none of your data is on GitHub',
   'Fixed: text selection in the PDF landed off the lines; the search box jumped while saving; block buttons overlapped the text'],
  lt:['Užrašų puslapis: 138 straipsniai iš aplanko, paieška pagal žodžius, autorius, metus ir raktažodžius, filtrai pagal aplanką, svarbumą ir skaitymo būseną',
@@ -774,6 +791,9 @@ const CHANGELOG=[
   'Vertėjas į anglų, lietuvių ir rusų kalbas — užrašai, įklijuotas tekstas ir PDF pažymėtas tekstas',
   '153 simboliai ir ženklai šešiose grupėse (mokslas, rodyklės, augalai ir šaltis, darbo ženklai)',
   'Sąsaja rusų, anglų ir lietuvių kalbomis',
+  'Nuorodą į PDF puslapį dabar galima pridėti bet kuriam blokui, ne tik citatai: mygtukas „→ psl.“ susieja bloką su atverstu puslapiu',
+  'Pataisyta: blokų mygtukai (↑ ↓ ✕) redaguojant patekdavo į užrašų tekstą — dabar jie yra už teksto, o patekę simboliai išvalomi atidarant',
+  'Užrašai dabar rėmelyje — baltoje kortelėje, todėl aišku, kur prasideda ir baigiasi užrašų sritis',
   'Užrašai laikomi tavo faile notes_data.json kompiuteryje: pati programa tuščia, GitHub tavo duomenų nėra',
   'Pataisyta: teksto žymėjimas PDF nesutapo su eilutėmis; paieškos laukas šokinėjo išsaugant; blokų mygtukai užlipdavo ant teksto']}
 ];
