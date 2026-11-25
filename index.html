@@ -116,7 +116,7 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 </head>
 <body>
 <header>
-<h1>Заметки по статьям</h1>
+<h1 id="appTitle">Заметки по статьям</h1>
 <input id="q" type="search" placeholder="поиск: дегидрин, Haimi, 2017, CK2…">
 <button id="btnNet">⚡ Для сети дегидринов</button>
 <div class="bar" title="прочитано"><i id="prog" style="width:0"></i></div>
@@ -124,6 +124,7 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 <button id="btnPdf">PDF</button>
 <button id="btnFsm" title="уменьшить текст заметок">A−</button>
 <button id="btnFsp" title="увеличить текст заметок">A+</button>
+<select id="lang" title="язык интерфейса" style="padding:3px 5px;font-size:12px;width:62px"><option value="ru">RU</option><option value="en">EN</option><option value="lt">LT</option></select>
 <button id="btnDark" title="тёмная тема">◐</button>
 <button id="btnSave" title="сохранить файл заметок на диск">Сохранить файл</button>
 <button id="btnLoad" title="загрузить файл заметок">Загрузить</button>
@@ -153,7 +154,7 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
   <button id="pZo" class="mini">−</button><span id="pZt">100%</span><button id="pZi" class="mini">+</button>
   <button id="pFit" class="mini">по ширине</button>
   <span class="sep"></span>
-  <button id="pSel" class="mini" title="перевести выделенный в PDF текст">EN→RU выделенное</button>
+  <button id="pSel" class="mini" title="перевести выделенный в PDF текст">Перевести выделенное</button>
   <button id="pQuote" class="mini" title="сделать из выделенного текста цитату в заметке">В цитату</button>
   <button id="pWide" class="mini" title="PDF на весь экран">⤢</button>
   <button id="pFold" class="mini">Свернуть</button>
@@ -166,14 +167,108 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 <div id="tagbox"></div>
 <div id="symbox"></div>
 <div id="boot"><div class="card">
- <h2>Первый запуск</h2>
- <p>Заметки хранятся у тебя на компьютере, в файле <b>notes_data.json</b> рядом с этой страницей. Загрузи его один раз — дальше страница будет помнить сама.</p>
+ <h2 id="bootH">Первый запуск</h2>
+ <p id="bootP">Заметки хранятся у тебя на компьютере, в файле <b>notes_data.json</b> рядом с этой страницей. Загрузи его один раз — дальше страница будет помнить сама.</p>
  <div class="row">
   <button id="bLoad">Загрузить notes_data.json</button>
   <button id="bEmpty">Начать с пустого</button>
  </div>
- <p class="sv">Файл никуда не уходит: всё остаётся в твоём браузере и на диске.</p>
+ <p class="sv" id="bootS" style="flex:none;text-align:left;white-space:normal;overflow:visible">Файл никуда не уходит: всё остаётся в твоём браузере и на диске.</p>
 </div></div>
+<script>
+const LSg=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+let L=LSg('dhn_lang')||'ru';
+const TR={en:{
+'Заметки по статьям':'Article Notes','поиск: дегидрин, Haimi, 2017, CK2…':'search: dehydrin, Haimi, 2017, CK2…',
+'⚡ Для сети дегидринов':'⚡ For the dehydrin network','только статьи с методами и идеями для поиска сети взаимодействий дегидринов':'only papers with methods and ideas for mapping the dehydrin interaction network',
+'Сохранить файл':'Save file','сохранить файл заметок на диск':'save the notes file to disk','Загрузить':'Load','загрузить файл заметок':'load a notes file',
+'тёмная тема':'dark theme','уменьшить текст заметок':'smaller text in the notes','увеличить текст заметок':'bigger text in the notes',
+'сохранено':'saved','НЕ СОХРАНЕНО':'NOT SAVED','заметки сохранены в браузере':'notes saved in the browser',
+'в браузере кончилось место — нажми «Сохранить файл»':'the browser is out of space — click “Save file”',
+'заметки из браузера':'notes from the browser','файл сохранён':'file saved','файл скачан':'file downloaded',
+'положи notes_data.json рядом со страницей':'put notes_data.json next to this page',
+'Все папки':'All folders','Все: прочитано и нет':'All: read and unread','Не читала':'Not read','Читаю':'Reading','Прочитано':'Read','Не прочитано':'Unread',
+'Любая важность':'Any importance','★★★ главные':'★★★ key papers','★★ и выше':'★★ and up',
+'Сортировка: важность':'Sort: importance','год':'year','автор':'author','папка':'folder','Теги':'Keywords',
+'из':'of','тег':'keyword','прочитано':'read','читаю':'reading','стр.':'p.',
+'Статус:':'Status:','Открыть PDF':'Open PDF','★ важность':'★ importance',
+'Текст':'Text','Заголовок':'Heading','Пункт':'Bullet','Цитата':'Quote','тип блока':'block type',
+'мельче этот блок':'smaller text in this block','крупнее этот блок':'bigger text in this block',
+'жирный':'bold','курсив':'italic','верхний индекс':'superscript','нижний индекс':'subscript','выделить цветом':'highlight',
+'+ блок':'+ block','добавить блок ниже':'add a block below','+ плашка':'+ colour block','добавить цветную плашку':'add a colour block',
+'+ цитата':'+ quote','добавить цитату со страницей':'add a quote with a page number','вставить символ или значок':'insert a symbol or icon',
+'плашка: ':'colour: ','без цвета':'none','голубая':'blue','зелёная':'green','жёлтая':'yellow','розовая':'pink','сиреневая':'violet','бирюзовая':'teal','серая':'grey',
+'Значки':'Icons','Работа':'Work','Растения и холод':'Plants and cold','Стрелки':'Arrows','Наука':'Science','Знаки':'Signs',
+'+ добавить блок в конце':'+ add a block at the end','Переводчик':'Translator','Перевести заметку':'Translate the note',
+'Открыть в Google Переводчике':'Open in Google Translate','Перевести':'Translate','Перевод → в заметку':'Translation → into the note',
+'Вставь сюда текст из статьи':'Paste text from the paper here','перевожу…':'translating…','на язык':'into',
+'(пусто)':'(empty)','(нет связи с переводчиком — нажми «Открыть в Google Переводчике»)':'(no connection to the translator — use “Open in Google Translate”)',
+'+ слово':'+ keyword','добавить ключевое слово':'add a keyword','убрать слово':'remove keyword',
+'нажми — искать по этому слову; двойной щелчок — переименовать':'click to filter by this keyword; double-click to rename',
+'ключевое слово':'keyword','найти слово…':'find a keyword…','сбросить':'clear','ничего не найдено':'nothing found',
+'предыдущая страница':'previous page','следующая страница':'next page','по ширине':'fit width','PDF на весь экран':'PDF full width','Свернуть':'Hide',
+'Перевести выделенное':'Translate selection','перевести выделенный в PDF текст':'translate the text selected in the PDF',
+'В цитату':'To a quote','сделать из выделенного текста цитату в заметке':'turn the selected text into a quote in the note',
+'перевести':'translate','страница PDF':'PDF page','→ стр.':'→ page',
+'Сначала выдели текст в PDF.':'Select some text in the PDF first.','Файл не читается.':'The file cannot be read.','Загружено статей: ':'Papers loaded: ',
+'Чтобы PDF открывались прямо здесь: ':'To open PDFs right here: ','Подключить папку со статьями':'Connect the articles folder',
+'Подключено PDF: ':'PDFs connected: ','(совпало со списком: ':'(matched with the list: ',
+'PDF не открылся. ':'The PDF did not open. ','Открыть в новой вкладке':'Open in a new tab',
+'Браузер не пускает страницу к файлам на диске напрямую. Нажми «Подключить папку» и выбери ARTICLES — тогда PDF будут открываться здесь же, со страницей и подсветкой.':'The browser does not let this page read files from disk directly. Click “Connect the articles folder” and choose ARTICLES — then PDFs open here, on the right page and with the quote highlighted.',
+'Файлы pdfjs не найдены рядом со страницей.':'The pdfjs files were not found next to this page.',
+'Браузер не поддерживает выбор папки. Открывай PDF кнопкой «Открыть в новой вкладке».':'This browser cannot pick a folder. Use “Open in a new tab” for PDFs.',
+'Первый запуск':'First run','Загрузить notes_data.json':'Load notes_data.json','Начать с пустого':'Start empty',
+'Заметки хранятся у тебя на компьютере, в файле':'Your notes live on your own computer, in the file',
+'рядом с этой страницей. Загрузи его один раз — дальше страница будет помнить сама.':'next to this page. Load it once — after that the page remembers them itself.',
+'Файл никуда не уходит: всё остаётся в твоём браузере и на диске.':'Nothing is uploaded: everything stays in your browser and on your disk.',
+'Пиши что хочешь — сохраняется само.':'Write anything — it saves itself.','Выбери статью слева.':'Pick a paper on the left.'
+},lt:{
+'Заметки по статьям':'Straipsnių užrašai','поиск: дегидрин, Haimi, 2017, CK2…':'paieška: dehidrinas, Haimi, 2017, CK2…',
+'⚡ Для сети дегидринов':'⚡ Dehidrinų sąveikų tinklui','только статьи с методами и идеями для поиска сети взаимодействий дегидринов':'tik straipsniai su metodais ir idėjomis dehidrinų sąveikų tinklui tirti',
+'Сохранить файл':'Išsaugoti failą','сохранить файл заметок на диск':'išsaugoti užrašų failą diske','Загрузить':'Įkelti','загрузить файл заметок':'įkelti užrašų failą',
+'тёмная тема':'tamsi tema','уменьшить текст заметок':'mažinti užrašų tekstą','увеличить текст заметок':'didinti užrašų tekstą',
+'сохранено':'išsaugota','НЕ СОХРАНЕНО':'NEIŠSAUGOTA','заметки сохранены в браузере':'užrašai išsaugoti naršyklėje',
+'в браузере кончилось место — нажми «Сохранить файл»':'naršyklėje pritrūko vietos — spausk „Išsaugoti failą“',
+'заметки из браузера':'užrašai iš naršyklės','файл сохранён':'failas išsaugotas','файл скачан':'failas atsisiųstas',
+'положи notes_data.json рядом со страницей':'padėk notes_data.json šalia šio puslapio',
+'Все папки':'Visi aplankai','Все: прочитано и нет':'Visi: skaityti ir ne','Не читала':'Neskaityta','Читаю':'Skaitau','Прочитано':'Perskaityta','Не прочитано':'Neperskaityta',
+'Любая важность':'Bet koks svarbumas','★★★ главные':'★★★ svarbiausi','★★ и выше':'★★ ir daugiau',
+'Сортировка: важность':'Rikiuoti: svarbumas','год':'metai','автор':'autorius','папка':'aplankas','Теги':'Raktažodžiai',
+'из':'iš','тег':'raktažodis','прочитано':'perskaityta','читаю':'skaitau','стр.':'psl.',
+'Статус:':'Būsena:','Открыть PDF':'Atverti PDF','★ важность':'★ svarbumas',
+'Текст':'Tekstas','Заголовок':'Antraštė','Пункт':'Punktas','Цитата':'Citata','тип блока':'bloko tipas',
+'мельче этот блок':'mažesnis šio bloko tekstas','крупнее этот блок':'didesnis šio bloko tekstas',
+'жирный':'pusjuodis','курсив':'kursyvas','верхний индекс':'viršutinis indeksas','нижний индекс':'apatinis indeksas','выделить цветом':'paryškinti spalva',
+'+ блок':'+ blokas','добавить блок ниже':'pridėti bloką žemiau','+ плашка':'+ spalvotas blokas','добавить цветную плашку':'pridėti spalvotą bloką',
+'+ цитата':'+ citata','добавить цитату со страницей':'pridėti citatą su puslapiu','вставить символ или значок':'įterpti simbolį ar ženklą',
+'плашка: ':'spalva: ','без цвета':'be spalvos','голубая':'žydra','зелёная':'žalia','жёлтая':'geltona','розовая':'rožinė','сиреневая':'violetinė','бирюзовая':'turkio','серая':'pilka',
+'Значки':'Ženklai','Работа':'Darbas','Растения и холод':'Augalai ir šaltis','Стрелки':'Rodyklės','Наука':'Mokslas','Знаки':'Simboliai',
+'+ добавить блок в конце':'+ pridėti bloką pabaigoje','Переводчик':'Vertėjas','Перевести заметку':'Išversti užrašą',
+'Открыть в Google Переводчике':'Atverti Google vertėjuje','Перевести':'Versti','Перевод → в заметку':'Vertimą → į užrašus',
+'Вставь сюда текст из статьи':'Įklijuok tekstą iš straipsnio','перевожу…':'verčiu…','на язык':'į',
+'(пусто)':'(tuščia)','(нет связи с переводчиком — нажми «Открыть в Google Переводчике»)':'(nėra ryšio su vertėju — spausk „Atverti Google vertėjuje“)',
+'+ слово':'+ raktažodis','добавить ключевое слово':'pridėti raktažodį','убрать слово':'pašalinti raktažodį',
+'нажми — искать по этому слову; двойной щелчок — переименовать':'spustelk, kad filtruotum pagal šį raktažodį; dvigubas spustelėjimas — pervadinti',
+'ключевое слово':'raktažodis','найти слово…':'rasti raktažodį…','сбросить':'išvalyti','ничего не найдено':'nieko nerasta',
+'предыдущая страница':'ankstesnis puslapis','следующая страница':'kitas puslapis','по ширине':'pagal plotį','PDF на весь экран':'PDF per visą plotį','Свернуть':'Slėpti',
+'Перевести выделенное':'Versti pažymėtą','перевести выделенный в PDF текст':'versti PDF pažymėtą tekstą',
+'В цитату':'Į citatą','сделать из выделенного текста цитату в заметке':'paversti pažymėtą tekstą citata užrašuose',
+'перевести':'versti','страница PDF':'PDF puslapis','→ стр.':'→ psl.',
+'Сначала выдели текст в PDF.':'Pirma pažymėk tekstą PDF faile.','Файл не читается.':'Failo nepavyksta perskaityti.','Загружено статей: ':'Įkelta straipsnių: ',
+'Чтобы PDF открывались прямо здесь: ':'Kad PDF atsidarytų čia pat: ','Подключить папку со статьями':'Prijungti straipsnių aplanką',
+'Подключено PDF: ':'Prijungta PDF: ','(совпало со списком: ':'(sutapo su sąrašu: ',
+'PDF не открылся. ':'PDF neatsidarė. ','Открыть в новой вкладке':'Atverti naujoje kortelėje',
+'Браузер не пускает страницу к файлам на диске напрямую. Нажми «Подключить папку» и выбери ARTICLES — тогда PDF будут открываться здесь же, со страницей и подсветкой.':'Naršyklė neleidžia šiam puslapiui tiesiogiai skaityti failų iš disko. Spausk „Prijungti straipsnių aplanką“ ir pasirink ARTICLES — tada PDF atsidarys čia pat, reikiamame puslapyje ir su paryškinta citata.',
+'Файлы pdfjs не найдены рядом со страницей.':'Šalia puslapio nerasti pdfjs failai.',
+'Браузер не поддерживает выбор папки. Открывай PDF кнопкой «Открыть в новой вкладке».':'Ši naršyklė nemoka pasirinkti aplanko. PDF atverk mygtuku „Atverti naujoje kortelėje“.',
+'Первый запуск':'Pirmas paleidimas','Загрузить notes_data.json':'Įkelti notes_data.json','Начать с пустого':'Pradėti nuo tuščio',
+'Заметки хранятся у тебя на компьютере, в файле':'Užrašai laikomi tavo kompiuteryje, faile',
+'рядом с этой страницей. Загрузи его один раз — дальше страница будет помнить сама.':'šalia šio puslapio. Įkelk jį vieną kartą — toliau puslapis prisimins pats.',
+'Файл никуда не уходит: всё остаётся в твоём браузере и на диске.':'Niekas niekur nesiunčiama: viskas lieka tavo naršyklėje ir diske.',
+'Пиши что хочешь — сохраняется само.':'Rašyk ką nori — išsaugoma savaime.','Выбери статью слева.':'Pasirink straipsnį kairėje.'
+}};
+const T=s=>(L!=='ru'&&TR[L]&&TR[L][s])||s;
+</script>
 <script src="pdfjs/pdf.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),E=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -185,7 +280,7 @@ let DOC=null, cur=null, netOnly=false, curTag='', files={}, dirty=false;
 let svT=null;
 function save(){dirty=true;$('#sv').textContent='…';clearTimeout(svT);svT=setTimeout(()=>{
   const ok=LSset(KEY,JSON.stringify(DOC));
-  $('#sv').textContent=ok?'сохранено':'НЕ СОХРАНЕНО';$('#sv').title=ok?'заметки сохранены в браузере':'в браузере кончилось место — нажми «Сохранить файл»';
+  $('#sv').textContent=ok?T('сохранено'):T('НЕ СОХРАНЕНО');$('#sv').title=ok?T('заметки сохранены в браузере'):T('в браузере кончилось место — нажми «Сохранить файл»');
 },500)}
 function loadDoc(j){
   DOC=j; window.DOC=DOC;
@@ -202,8 +297,8 @@ function hay(p){
 }
 /* ---------- список ---------- */
 function buildFolders(){
-  const f=$('#fFolder'); f.textContent=''; f.append(new Option('Все папки',''));
-  [...new Set(DOC.papers.map(p=>p.folder))].sort().forEach(x=>f.append(new Option(x+' ('+DOC.papers.filter(p=>p.folder===x).length+')',x)));
+  const f=$('#fFolder'); const keep=f.value; f.textContent=''; f.append(new Option(T('Все папки'),''));
+  [...new Set(DOC.papers.map(p=>p.folder))].sort().forEach(x=>f.append(new Option(x+' ('+DOC.papers.filter(p=>p.folder===x).length+')',x)));f.value=keep||'';
 }
 const isNet=p=>p.blocks.some(b=>b.t==='h'&&/сети DHN/i.test(b.x||''));
 function filtered(){
@@ -223,7 +318,7 @@ function filtered(){
 }
 function renderList(){
   const r=filtered(),box=$('#items');box.textContent='';
-  $('#cnt').textContent=r.length+' из '+DOC.papers.length+(curTag?' · тег: '+curTag:'');
+  $('#cnt').textContent=r.length+' '+T('из')+' '+DOC.papers.length+(curTag?' · '+T('тег')+': '+curTag:'');
   r.forEach(p=>{
     const d=E('div','it'+(cur===p?' sel':''));d.append(E('div','dot d'+(p.status||0)));
     const w=E('div');w.style.minWidth=0;
@@ -231,7 +326,7 @@ function renderList(){
     d.append(w);d.onclick=()=>open_(p);box.append(d)});
   const done=DOC.papers.filter(p=>p.status===2).length,rd=DOC.papers.filter(p=>p.status===1).length;
   $('#prog').style.width=(done/DOC.papers.length*100).toFixed(1)+'%';
-  $('#progTx').textContent='прочитано '+done+' / '+DOC.papers.length+(rd?' · читаю '+rd:'');
+  $('#progTx').textContent=T('прочитано')+' '+done+' / '+DOC.papers.length+(rd?' · '+T('читаю')+' '+rd:'');
 }
 ['#q','#fFolder','#fStatus','#fRel','#fSort'].forEach(s=>$(s).addEventListener('input',renderList));
 $('#btnNet').onclick=e=>{netOnly=!netOnly;e.target.classList.toggle('on',netOnly);renderList()};
@@ -240,13 +335,13 @@ $('#btnTags').onclick=e=>{
   const c={};DOC.papers.forEach(p=>p.tags.forEach(t=>c[t]=(c[t]||0)+1));
   const all=Object.entries(c).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ru'));
   tb.textContent='';
-  const inp=E('input');inp.type='search';inp.placeholder='найти слово…';inp.style.cssText='width:220px;padding:3px 7px;font-size:12.5px';
-  const b0=E('button','mini','сбросить');b0.style.marginLeft='6px';
+  const inp=E('input');inp.type='search';inp.placeholder=T('найти слово…');inp.style.cssText='width:220px;padding:3px 7px;font-size:12.5px';
+  const b0=E('button','mini',T('сбросить'));b0.style.marginLeft='6px';
   b0.onclick=()=>{curTag='';tb.style.display='none';renderList();if(cur)open_(cur)};
   const box=E('div');box.style.cssText='margin-top:7px;max-height:40vh;overflow:auto';
   const draw=()=>{const f=inp.value.trim().toLowerCase();box.textContent='';
     const list=all.filter(([t])=>!f||t.toLowerCase().includes(f));
-    if(!list.length){box.append(E('span','sv','ничего не найдено'));return}
+    if(!list.length){box.append(E('span','sv',T('ничего не найдено')));return}
     list.slice(0,400).forEach(([t,n])=>{const s2=E('span','tag'+(curTag===t.toLowerCase()?' sel':''),t+' ('+n+')');
       s2.onclick=()=>{curTag=t.toLowerCase();tb.style.display='none';renderList();if(cur)open_(cur)};box.append(s2)})};
   inp.oninput=draw;tb.append(inp,b0,box);draw();
@@ -278,7 +373,7 @@ const clean=h=>{const d=document.createElement('div');d.innerHTML=h;
 function blockEl(p,b,i){
   if(b.t==='img'){
     const w=E('div','imgb');const im=E('img');im.src=b.src;w.append(im);
-    const g=E('div','row');const del=E('button','mini','удалить картинку');
+    const g=E('div','row');const del=E('button','mini','🗑');
     del.onclick=()=>{p.blocks.splice(i,1);save();drawDoc(p)};g.append(del);w.append(g);return w}
   const mk=()=>{
     const e=E('div','blk '+(b.t==='quote'?'q':b.t)+(b.t==='h'&&/сети DHN/i.test(b.x||'')?' net':'')+(b.s?' s'+b.s:''));
@@ -304,9 +399,9 @@ function blockEl(p,b,i){
     g.append(up,dn,rm);e.append(g);return e};
   if(b.t==='quote'){
     const row=E('div','qrow');const e=mk();
-    const pg=E('input','qpg');pg.type='number';pg.min=1;pg.value=b.p||1;pg.title='страница PDF';
+    const pg=E('input','qpg');pg.type='number';pg.min=1;pg.value=b.p||1;pg.title=T('страница PDF');
     pg.onchange=()=>{b.p=+pg.value||1;save()};
-    const go=E('button','mini','→ стр.');go.onclick=()=>openPdf(p,b.p||1,e.textContent);
+    const go=E('button','mini',T('→ стр.'));go.onclick=()=>openPdf(p,b.p||1,e.textContent);
     row.append(e,pg,go);return row}
   return mk();
 }
@@ -316,32 +411,32 @@ function shrink(dataUrl,cb){const im=new Image();im.onload=()=>{const m=900,s=Ma
 
 function toolbar(p){
   const tb=E('div','tb');
-  const sel=E('select');TYPES.forEach(([v,n])=>sel.append(new Option(n,v)));
-  sel.title='тип блока';sel.onchange=()=>{if(focusIdx<0)return;const b=p.blocks[focusIdx];b.t=sel.value;if(b.t==='quote'&&!b.p)b.p=1;save();drawDoc(p,focusIdx)};
+  const sel=E('select');TYPES.forEach(([v,n])=>sel.append(new Option(T(n),v)));
+  sel.title=T('тип блока');sel.onchange=()=>{if(focusIdx<0)return;const b=p.blocks[focusIdx];b.t=sel.value;if(b.t==='quote'&&!b.p)b.p=1;save();drawDoc(p,focusIdx)};
   tb.append(sel);
   const add=(lbl,ti,fn)=>{const b=E('button','mini',lbl);b.title=ti;b.onmousedown=e=>e.preventDefault();b.onclick=fn;tb.append(b);return b};
-  add('A−','мельче этот блок',()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];bl.s=Math.max(-2,(bl.s||0)-1);if(!bl.s)delete bl.s;save();drawDoc(p,focusIdx)});
-  add('A+','крупнее этот блок',()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];bl.s=Math.min(3,(bl.s||0)+1);if(!bl.s)delete bl.s;save();drawDoc(p,focusIdx)});
+  add('A−',T('мельче этот блок'),()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];bl.s=Math.max(-2,(bl.s||0)-1);if(!bl.s)delete bl.s;save();drawDoc(p,focusIdx)});
+  add('A+',T('крупнее этот блок'),()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];bl.s=Math.min(3,(bl.s||0)+1);if(!bl.s)delete bl.s;save();drawDoc(p,focusIdx)});
   tb.append(E('span','sep'));
-  add('Ж','жирный',()=>document.execCommand('bold'));
-  add('К','курсив',()=>document.execCommand('italic'));
-  add('x²','верхний индекс',()=>document.execCommand('superscript'));
-  add('x₂','нижний индекс',()=>document.execCommand('subscript'));
-  add('✎','выделить цветом',()=>{document.execCommand('hiliteColor',false,'#ffe9a8')});
+  add('Ж',T('жирный'),()=>document.execCommand('bold'));
+  add('К',T('курсив'),()=>document.execCommand('italic'));
+  add('x²',T('верхний индекс'),()=>document.execCommand('superscript'));
+  add('x₂',T('нижний индекс'),()=>document.execCommand('subscript'));
+  add('✎',T('выделить цветом'),()=>{document.execCommand('hiliteColor',false,'#ffe9a8')});
   tb.append(E('span','sep'));
-  add('+ блок','добавить блок ниже',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'p',x:''});save();drawDoc(p,i+1)});
-  add('+ плашка','добавить цветную плашку',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'p',x:'',c:'blue'});save();drawDoc(p,i+1)});
-  add('+ цитата','добавить цитату со страницей',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'quote',x:'',p:1});save();drawDoc(p,i+1)});
+  add(T('+ блок'),T('добавить блок ниже'),()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'p',x:''});save();drawDoc(p,i+1)});
+  add(T('+ плашка'),T('добавить цветную плашку'),()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'p',x:'',c:'blue'});save();drawDoc(p,i+1)});
+  add(T('+ цитата'),T('добавить цитату со страницей'),()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'quote',x:'',p:1});save();drawDoc(p,i+1)});
   tb.append(E('span','sep'));
-  COLORS.forEach(([v,n,bg])=>{const b=E('button','sw');b.title='плашка: '+n;b.style.background=bg;
+  COLORS.forEach(([v,n,bg])=>{const b=E('button','sw');b.title=T('плашка: ')+T(n);b.style.background=bg;
     if(!v)b.textContent='—',b.style.fontSize='11px',b.style.lineHeight='17px';
     b.onmousedown=ev=>ev.preventDefault();
     b.onclick=()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];if(v)bl.c=v;else delete bl.c;save();drawDoc(p,focusIdx)};
     tb.append(b)});
-  add('Ω','вставить символ или значок',e=>{
+  add('Ω',T('вставить символ или значок'),e=>{
     const sb=$('#symbox');if(sb.style.display==='block'){sb.style.display='none';return}
     sb.textContent='';
-    SYMS.forEach(([g,list])=>{sb.append(E('span','sg',g));
+    SYMS.forEach(([g,list])=>{sb.append(E('span','sg',T(g)));
       list.split(' ').forEach(ch=>{const z=E('span',null,ch);z.title=ch;
         z.onmousedown=ev=>{ev.preventDefault();document.execCommand('insertText',false,ch)};sb.append(z)})});
     const r=e.target.getBoundingClientRect();
@@ -356,28 +451,36 @@ function drawDoc(p,focus){
   d.append(E('div','meta',p.folder+' / '+p.file.split('/').pop()));
   const tg=E('div','tags');drawTags(p,tg);
   d.append(tg);
-  const r1=E('div','row');r1.append(E('span',null,'Статус:'));
-  ['Не читала','Читаю','Прочитано'].forEach((l,i)=>{const b=E('button',null,l);if((p.status||0)===i)b.classList.add('on');
+  const r1=E('div','row');r1.append(E('span',null,T('Статус:')));
+  ['Не читала','Читаю','Прочитано'].forEach((l,i)=>{const b=E('button',null,T(l));if((p.status||0)===i)b.classList.add('on');
     b.onclick=()=>{p.status=i;save();renderList();drawDoc(p)};r1.append(b)});
-  const op=E('button',null,'Открыть PDF');op.onclick=()=>openPdf(p,1);r1.append(op);
-  const st=E('button',null,'★ важность '+p.rel);st.onclick=()=>{p.rel=p.rel%3+1;save();renderList();drawDoc(p)};r1.append(st);
+  const op=E('button',null,T('Открыть PDF'));op.onclick=()=>openPdf(p,1);r1.append(op);
+  const st=E('button',null,T('★ важность')+' '+p.rel);st.onclick=()=>{p.rel=p.rel%3+1;save();renderList();drawDoc(p)};r1.append(st);
   d.append(r1);
   d.append(toolbar(p));
   p.blocks.forEach((b,i)=>d.append(blockEl(p,b,i)));
-  const addEnd=E('button','mini','+ добавить блок в конце');
+  const addEnd=E('button','mini',T('+ добавить блок в конце'));
   addEnd.onclick=()=>{p.blocks.push({t:'p',x:''});save();drawDoc(p,p.blocks.length-1)};
   const rEnd=E('div','row');rEnd.append(addEnd);d.append(rEnd);
   /* переводчик */
-  d.append(Object.assign(E('div','blk h'),{contentEditable:'false',textContent:'Переводчик'}));
-  const out=E('div','tr');const r2=E('div','row');
-  const b1=E('button','mini','Заметку RU → EN');b1.onclick=async()=>{out.classList.add('show');out.textContent='перевожу…';out.textContent=await tr(plain(p),'ru','en')};
-  const b2=E('button','mini','Открыть в Google Переводчике');b2.onclick=()=>gt(plain(p),'ru','en');
+  d.append(Object.assign(E('div','blk h'),{contentEditable:'false',textContent:T('Переводчик')}));
+  const out=E('div','tr');
+  const langSel=E('select');[['en','EN'],['ru','RU'],['lt','LT']].forEach(([v,n2])=>langSel.append(new Option(n2,v)));
+  langSel.value=LSget('dhn_trg')||(L==='ru'?'en':'ru');
+  langSel.style.cssText='padding:3px 6px;font-size:12px;width:62px';
+  langSel.onchange=()=>LSset('dhn_trg',langSel.value);
+  const r2=E('div','row');
+  r2.append(E('span',null,T('на язык')),langSel);
+  const b1=E('button','mini',T('Перевести заметку'));
+  b1.onclick=async()=>{out.classList.add('show');out.textContent=T('перевожу…');out.textContent=await tr(plain(p),L==='ru'?'ru':'auto',langSel.value)};
+  const b2=E('button','mini',T('Открыть в Google Переводчике'));
+  b2.onclick=()=>gt(plain(p),'auto',langSel.value);
   r2.append(b1,b2);
   const en=E('textarea');en.style.cssText='width:100%;min-height:60px;background:var(--surf);border:1px solid var(--line2);border-radius:8px;padding:8px';
-  en.placeholder='Вставь английский текст → EN → RU';
-  const r3=E('div','row');const b3=E('button','mini','EN → RU');
-  b3.onclick=async()=>{out.classList.add('show');out.textContent='перевожу…';out.textContent=await tr(en.value||'(пусто)','en','ru')};
-  const b4=E('button','mini','Перевод → в заметку');
+  en.placeholder=T('Вставь сюда текст из статьи');
+  const r3=E('div','row');const b3=E('button','mini',T('Перевести'));
+  b3.onclick=async()=>{out.classList.add('show');out.textContent=T('перевожу…');out.textContent=await tr(en.value||T('(пусто)'),'auto',langSel.value)};
+  const b4=E('button','mini',T('Перевод → в заметку'));
   b4.onclick=()=>{if(!out.textContent)return;p.blocks.push({t:'p',x:out.textContent});save();drawDoc(p,p.blocks.length-1)};
   r3.append(b3,b4);
   d.append(r2,en,r3,out);
@@ -387,7 +490,7 @@ function drawDoc(p,focus){
 }
 function allTags(){const s=new Set();DOC.papers.forEach(p=>p.tags.forEach(t=>s.add(t)));return [...s].sort((a,b)=>a.localeCompare(b,'ru'))}
 function tagInput(val,onOk,onCancel){
-  const i=E('input','tagin');i.value=val||'';i.setAttribute('list','alltags');i.placeholder='ключевое слово';
+  const i=E('input','tagin');i.value=val||'';i.setAttribute('list','alltags');i.placeholder=T('ключевое слово');
   i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();onOk(i.value.trim())}if(e.key==='Escape'){e.preventDefault();onCancel()}};
   i.onblur=()=>setTimeout(()=>onOk(i.value.trim()),120);
   return i;
@@ -400,17 +503,17 @@ function drawTags(p,tg){
   p.tags.forEach((t,i)=>{
     const b=E('span','tag'+(curTag===t.toLowerCase()?' sel':''));
     b.append(E('span',null,t));
-    b.title='нажми — искать по этому слову; двойной щелчок — переименовать';
+    b.title=T('нажми — искать по этому слову; двойной щелчок — переименовать');
     b.onclick=()=>{curTag=curTag===t.toLowerCase()?'':t.toLowerCase();renderList();drawTags(p,tg)};
     b.ondblclick=ev=>{ev.stopPropagation();
       const inp=tagInput(t,v=>{if(v&&v!==t){p.tags[i]=v}else if(!v){p.tags.splice(i,1)}
         p._h=hay(p);save();renderList();drawTags(p,tg)},()=>drawTags(p,tg));
       b.replaceWith(inp);inp.focus();inp.select()};
-    const x=E('button','tx','✕');x.title='убрать слово';
+    const x=E('button','tx','✕');x.title=T('убрать слово');
     x.onclick=ev=>{ev.stopPropagation();p.tags.splice(i,1);p._h=hay(p);save();renderList();drawTags(p,tg)};
     b.append(x);tg.append(b)});
-  const add=E('span','tag addt','+ слово');
-  add.title='добавить ключевое слово';
+  const add=E('span','tag addt',T('+ слово'));
+  add.title=T('добавить ключевое слово');
   add.onclick=()=>{const inp=tagInput('',v=>{const low=p.tags.map(x=>x.toLowerCase());
       if(v&&!low.includes(v.toLowerCase()))p.tags.push(v);
       p._h=hay(p);save();renderList();drawTags(p,tg)},()=>drawTags(p,tg));
@@ -446,11 +549,11 @@ async function openPdf(p,page,quote){
   pendQ=quote||'';curPg=page||1;
   const qb=$('#qbar');
   if(quote){qb.textContent='';qb.append(E('span',null,'« '+quote+' »  '));
-    const t=E('button','mini','перевести');t.onclick=async()=>{t.textContent='…';const r=await tr(quote,'en','ru');t.replaceWith(E('i',null,' → '+r))};
-    qb.append(t);qb.classList.add('show')}else qb.classList.remove('show');
+    const tb2=E('button','mini',T('перевести'));tb2.onclick=async()=>{tb2.textContent='…';const r=await tr(quote,'auto',LSget('dhn_trg')||(L==='ru'?'ru':L));tb2.replaceWith(E('i',null,' → '+r))};
+    qb.append(tb2);qb.classList.add('show')}else qb.classList.remove('show');
   if(curFile===p.file&&curDoc){render();return}
   curDoc=null;curFile=p.file;{const cx=$('#pcv').getContext('2d');if(cx)cx.clearRect(0,0,9999,9999)}$('#ptext').textContent='';
-  if(!window.pdfjsLib){msg(E('span',null,'Файлы pdfjs не найдены рядом со страницей.'));return}
+  if(!window.pdfjsLib){msg(E('span',null,T('Файлы pdfjs не найдены рядом со страницей.')));return}
   const f=await fileFor(p);
   try{
     let src;
@@ -460,8 +563,8 @@ async function openPdf(p,page,quote){
     $('#pTot').textContent='/ '+curDoc.numPages;msg(null);render();
   }catch(e){
     curDoc=null;
-    const w=E('div');w.append(E('b',null,'PDF не открылся. '),E('span',null,'Браузер не пускает страницу к файлам на диске напрямую. Нажми «Подключить папку» и выбери ARTICLES — тогда PDF будут открываться здесь же, со страницей и подсветкой.'));
-    const r=E('div','row');r.append(btnFolder(),(()=>{const b=E('button','mini','Открыть в новой вкладке');b.onclick=()=>window.open(p.file.split('/').map(encodeURIComponent).join('/')+'#page='+curPg,'_blank');return b})());
+    const w=E('div');w.append(E('b',null,T('PDF не открылся. ')),E('span',null,T('Браузер не пускает страницу к файлам на диске напрямую. Нажми «Подключить папку» и выбери ARTICLES — тогда PDF будут открываться здесь же, со страницей и подсветкой.')));
+    const r=E('div','row');r.append(btnFolder(),(()=>{const b=E('button','mini',T('Открыть в новой вкладке'));b.onclick=()=>window.open(p.file.split('/').map(encodeURIComponent).join('/')+'#page='+curPg,'_blank');return b})());
     w.append(r);msg(w)}
 }
 async function render(){
@@ -501,14 +604,14 @@ function highlight(q){
 }
 async function fit(){if(!curDoc)return;const pg=await curDoc.getPage(curPg);const v1=pg.getViewport({scale:1});
   scale=Math.max(.25,($('#pwrap').clientWidth-28)/v1.width);render()}
-$('#pSel').onclick=async()=>{const t=(getSelection()+'').trim();if(!t)return alert('Сначала выдели текст в PDF.');
-  const qb=$('#qbar');qb.classList.add('show');qb.textContent='перевожу…';qb.textContent=await tr(t,'en','ru')};
-$('#pQuote').onclick=()=>{const t=(getSelection()+'').trim();if(!t||!cur)return alert('Сначала выдели текст в PDF.');
-  cur.blocks.push({t:'quote',x:t,p:curPg});save();drawDoc(cur,cur.blocks.length-1)};
+$('#pSel').onclick=async()=>{const sx=(getSelection()+'').trim();if(!sx)return alert(T('Сначала выдели текст в PDF.'));
+  const qb=$('#qbar');qb.classList.add('show');qb.textContent=T('перевожу…');qb.textContent=await tr(sx,'auto',LSget('dhn_trg')||(L==='ru'?'ru':L))};
+$('#pQuote').onclick=()=>{const sx=(getSelection()+'').trim();if(!sx||!cur)return alert(T('Сначала выдели текст в PDF.'));
+  cur.blocks.push({t:'quote',x:sx,p:curPg});save();drawDoc(cur,cur.blocks.length-1)};
 
 /* ---------- папка со статьями ---------- */
 function btnFolder(){
-  const b=E('button','mini','Подключить папку со статьями');
+  const b=E('button','mini',T('Подключить папку со статьями'));
   b.onclick=async()=>{
     if(window.showDirectoryPicker){
       try{const dir=await window.showDirectoryPicker();const out={};
@@ -524,7 +627,7 @@ function btnFolder(){
 }
 function afterFolder(){
   const n=Object.keys(files).length,hit=DOC?DOC.papers.filter(p=>files[p.file]).length:0;
-  msg(E('span',null,'Подключено PDF: '+n+' (совпало со списком: '+hit+').'));
+  msg(E('span',null,T('Подключено PDF: ')+n+' '+T('(совпало со списком: ')+hit+').'));
   curFile='';if(cur)openPdf(cur,curPg,pendQ);
 }
 </script>
@@ -544,9 +647,9 @@ $('#btnSave').onclick=async()=>{
   const txt=JSON.stringify(DOC);
   if(window.showSaveFilePicker){
     try{if(!fileHandle)fileHandle=await window.showSaveFilePicker({suggestedName:'notes_data.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]});
-      const w=await fileHandle.createWritable();await w.write(txt);await w.close();$('#sv').textContent='файл сохранён';$('#sv').title='';return}
+      const w=await fileHandle.createWritable();await w.write(txt);await w.close();$('#sv').textContent=T('файл сохранён');$('#sv').title='';return}
     catch(e){if(e&&e.name==='AbortError')return}}
-  download('notes_data.json',txt);$('#sv').textContent='файл скачан';$('#sv').title='положи notes_data.json рядом со страницей';
+  download('notes_data.json',txt);$('#sv').textContent=T('файл скачан');$('#sv').title=T('положи notes_data.json рядом со страницей');
 };
 $('#btnLoad').onclick=()=>$('#fileData').click();
 $('#bLoad').onclick=()=>$('#fileData').click();
@@ -556,8 +659,8 @@ $('#fileData').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new F
       if(DOC&&DOC.papers.length){/* сохраняем мои правки: берём статус и блоки из нового файла только для новых статей */
         const old={};DOC.papers.forEach(p=>old[p.file]=p);
         j.papers.forEach(p=>{if(old[p.file]&&old[p.file]._edited)Object.assign(p,{blocks:old[p.file].blocks,status:old[p.file].status})})}
-      loadDoc(j);save();alert('Загружено статей: '+j.papers.length)}
-    catch(x){alert('Файл не читается.')}};
+      loadDoc(j);save();alert(T('Загружено статей: ')+j.papers.length)}
+    catch(x){alert(T('Файл не читается.'))}};
   r.readAsText(f)};
 $('#bEmpty').onclick=()=>{loadDoc({v:2,papers:[]});$('#boot').style.display='none'};
 
@@ -578,13 +681,45 @@ document.addEventListener('keydown',e=>{
   if(e.key==='p')$('#btnPdf').click()});
 window.addEventListener('beforeunload',e=>{if(dirty){}});
 
+/* ---------- языки ---------- */
+function opts(sel,list){const v=sel.value;sel.textContent='';list.forEach(([val,lbl])=>sel.append(new Option(T(lbl),val)));sel.value=v}
+function applyLang(){
+  document.title=T('Заметки по статьям');
+  $('#appTitle').textContent=T('Заметки по статьям');
+  $('#q').placeholder=T('поиск: дегидрин, Haimi, 2017, CK2…');
+  $('#btnNet').textContent=T('⚡ Для сети дегидринов');
+  $('#btnNet').title=T('только статьи с методами и идеями для поиска сети взаимодействий дегидринов');
+  $('#btnSave').textContent=T('Сохранить файл');$('#btnSave').title=T('сохранить файл заметок на диск');
+  $('#btnLoad').textContent=T('Загрузить');$('#btnLoad').title=T('загрузить файл заметок');
+  $('#btnFsm').title=T('уменьшить текст заметок');$('#btnFsp').title=T('увеличить текст заметок');
+  $('#btnDark').title=T('тёмная тема');
+  opts($('#fStatus'),[['',"Все: прочитано и нет"],['0','Не читала'],['1','Читаю'],['2','Прочитано'],['01','Не прочитано']]);
+  opts($('#fRel'),[['','Любая важность'],['3','★★★ главные'],['23','★★ и выше']]);
+  opts($('#fSort'),[['rel','Сортировка: важность'],['year','год'],['au','автор'],['folder','папка']]);
+  $('#btnTags').textContent=T('Теги');
+  $('#pPrev').title=T('предыдущая страница');$('#pNext').title=T('следующая страница');
+  $('#pFit').textContent=T('по ширине');
+  $('#pSel').textContent=T('Перевести выделенное');$('#pSel').title=T('перевести выделенный в PDF текст');
+  $('#pQuote').textContent=T('В цитату');$('#pQuote').title=T('сделать из выделенного текста цитату в заметке');
+  $('#pWide').title=T('PDF на весь экран');$('#pFold').textContent=T('Свернуть');
+  $('#bootH').textContent=T('Первый запуск');
+  $('#bootP').innerHTML=T('Заметки хранятся у тебя на компьютере, в файле')+' <b>notes_data.json</b> '+T('рядом с этой страницей. Загрузи его один раз — дальше страница будет помнить сама.');
+  $('#bootS').textContent=T('Файл никуда не уходит: всё остаётся в твоём браузере и на диске.');
+  $('#bLoad').textContent=T('Загрузить notes_data.json');$('#bEmpty').textContent=T('Начать с пустого');
+  if(DOC){buildFolders();renderList();if(cur)drawDoc(cur);else $('#note').textContent=T('Выбери статью слева.')}
+  else $('#note').textContent='';
+  document.documentElement.lang=L;
+}
+$('#lang').value=L;
+$('#lang').onchange=()=>{L=$('#lang').value;LSset('dhn_lang',L);applyLang()};
+
 /* ---------- старт ---------- */
 (function(){
   const raw=LSget(KEY);
-  if(raw){try{loadDoc(JSON.parse(raw));$('#sv').textContent='заметки из браузера';}catch(e){$('#boot').style.display='flex'}}
+  if(raw){try{loadDoc(JSON.parse(raw));$('#sv').textContent=T('заметки из браузера');}catch(e){$('#boot').style.display='flex'}}
   else $('#boot').style.display='flex';
-  msg((()=>{const w=E('div');w.append(E('span',null,'Чтобы PDF открывались прямо здесь: '));w.append(btnFolder());return w})());
-  layout();
+  msg((()=>{const w=E('div');w.append(E('span',null,T('Чтобы PDF открывались прямо здесь: ')));w.append(btnFolder());return w})());
+  applyLang();layout();
 })();
 </script>
 </body>

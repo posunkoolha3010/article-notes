@@ -6,7 +6,8 @@ A web app for working through a folder of scientific PDFs: short notes on every 
 - Reading progress for every paper: unread / reading / read, with a progress bar
 - Search by words, authors, years and tags; filter by folder, importance and progress
 - Built-in PDF viewer (pdf.js): the article page only, zoom, fit to width, selectable text, the quote highlighted
-- Translator both ways, including text selected in the PDF
+- Translator into English, Lithuanian or Russian, including text selected in the PDF
+- Interface in English, Lithuanian and Russian
 - Dark theme
 
 All notes and PDFs stay on your own computer. Nothing is uploaded to this repository.
