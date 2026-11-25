@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Заметки по статьям</title>
+<style>
+:root{--bg:#f7f6f3;--surf:#fff;--surf2:#f1efe9;--line:#e2dfd6;--line2:#cfcabb;--tx:#23211d;--tx2:#6b6760;--tx3:#938d82;
+--acc:#185fa5;--accbg:#e6f1fb;--warn:#854f0b;--warnbg:#faeeda;--ok:#3b6d11;--okbg:#eaf3de;--hi:#ffe9a8;--mark:rgba(255,196,0,.45)}
+html[data-dark]{--bg:#1b1b1a;--surf:#232322;--surf2:#2b2b29;--line:#383835;--line2:#4a4a46;--tx:#eceae5;--tx2:#a8a49c;--tx3:#817d75;
+--acc:#85b7eb;--accbg:#143047;--warn:#fac775;--warnbg:#3a2b10;--ok:#c0dd97;--okbg:#22300f;--hi:#5b4a14}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.55 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--tx);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:var(--surf);border:1px solid var(--line2);border-radius:6px;padding:4px 9px;cursor:pointer}
+button:hover{background:var(--surf2)}button.on{background:var(--accbg);border-color:var(--acc);color:var(--acc)}
+button.mini{padding:2px 7px;font-size:12px}
+input[type=text],input[type=search],input[type=number],select{background:var(--surf);border:1px solid var(--line2);border-radius:6px;padding:5px 8px}
+header{border-bottom:1px solid var(--line);background:var(--surf);padding:7px 10px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+header h1{font:500 15px/1 inherit;margin:0 4px 0 0;white-space:nowrap}
+#q{flex:1;min-width:170px}
+.bar{height:7px;background:var(--surf2);border-radius:4px;overflow:hidden;width:130px;border:1px solid var(--line)}
+.bar i{display:block;height:100%;background:var(--ok)}
+main{flex:1;display:grid;grid-template-columns:270px minmax(0,1fr) 0;min-height:0}
+main.pdf{grid-template-columns:270px minmax(0,1fr) minmax(0,1.25fr)}
+main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
+#list{overflow:auto;border-right:1px solid var(--line);background:var(--surf)}
+#note{overflow:auto;padding:14px 20px 120px}
+#pdf{border-left:1px solid var(--line);background:var(--surf2);display:flex;flex-direction:column;overflow:hidden}
+.filters{padding:7px 9px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:5px;background:var(--surf2);position:sticky;top:0;z-index:3}
+.filters select{padding:3px 5px;font-size:12px;max-width:124px}
+.cnt{font-size:12px;color:var(--tx2);padding:5px 10px}
+.it{padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;gap:7px;align-items:flex-start}
+.it:hover{background:var(--surf2)}.it.sel{background:var(--accbg)}
+.it b{font-weight:500;display:block;font-size:13px}.it small{color:var(--tx2);font-size:11.5px;display:block}
+.dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:5px;border:1px solid var(--line2)}
+.d0{background:transparent}.d1{background:var(--warn);border-color:var(--warn)}.d2{background:var(--ok);border-color:var(--ok)}
+/* ---- редактор ---- */
+.doc{max-width:860px}
+.ttl{font:500 19px/1.35 inherit;margin:0 0 3px}
+.meta{color:var(--tx2);font-size:13px}
+.tags{margin:7px 0;display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-size:11.5px;background:var(--surf2);border:1px solid var(--line);color:var(--tx2);border-radius:5px;padding:1px 7px;cursor:pointer}
+.tag:hover{border-color:var(--acc);color:var(--acc)}
+.tb{position:sticky;top:0;z-index:5;background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:5px 6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:8px 0 12px}
+.tb .sep{width:1px;height:20px;background:var(--line);margin:0 2px}
+.blk{position:relative;padding:3px 8px 3px 26px;border-radius:6px;outline:none;min-height:1.6em}
+.blk:hover{background:var(--surf2)}
+.blk:focus{background:var(--surf2);box-shadow:inset 2px 0 0 var(--acc)}
+.blk.h{font:500 15.5px/1.4 inherit;margin:16px 0 2px;padding-left:26px}
+.blk.h.net{color:var(--acc)}
+.blk.li{padding-left:34px}
+.blk.li:before{content:"•";position:absolute;left:19px;color:var(--tx3)}
+.blk.call{background:var(--accbg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:6px 0}
+.blk.call:hover,.blk.call:focus{filter:brightness(.985)}
+.blk.warn{background:var(--warnbg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:6px 0;color:var(--warn)}
+.blk.ok{background:var(--okbg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:6px 0;color:var(--ok)}
+.qrow{display:flex;gap:6px;align-items:flex-start;margin:4px 0 4px 26px}
+.qrow .blk{flex:1;border-left:2px solid var(--acc);border-radius:0 6px 6px 0;background:var(--accbg);color:var(--acc);font-style:italic;font-size:13px;padding-left:10px}
+.qpg{width:62px;padding:2px 4px;font-size:12px}
+.gut{position:absolute;left:2px;top:2px;display:none;gap:2px}
+.blk:hover .gut,.blk:focus .gut{display:flex}
+.gut button{padding:0 4px;font-size:11px;line-height:1.5;border-radius:4px}
+.imgb{margin:8px 0 8px 26px;max-width:100%}
+.imgb img{max-width:100%;border:1px solid var(--line);border-radius:8px;display:block}
+#symbox{display:none;position:absolute;z-index:9;background:var(--surf);border:1px solid var(--line2);border-radius:8px;padding:7px;max-width:340px;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+#symbox span{display:inline-block;padding:3px 7px;cursor:pointer;border-radius:5px;font-size:15px}
+#symbox span:hover{background:var(--accbg)}
+/* ---- pdf ---- */
+.pbar{padding:5px 7px;border-bottom:1px solid var(--line);display:flex;gap:5px;align-items:center;background:var(--surf);flex-wrap:wrap}
+.pbar span{font-size:12.5px;color:var(--tx2)}
+#pwrap{flex:1;overflow:auto;display:flex;justify-content:center;padding:10px;background:var(--surf2)}
+#pstage{position:relative;box-shadow:0 2px 10px rgba(0,0,0,.14);height:max-content;background:#fff}
+#pcv{display:block}
+#ptext{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:1}
+#ptext span{position:absolute;white-space:pre;transform-origin:0 0;color:transparent;cursor:text}
+#ptext span.hl{background:var(--mark);border-radius:2px}
+#ptext ::selection{background:rgba(24,95,165,.35)}
+.pmsg{padding:14px;color:var(--tx2);font-size:13px;line-height:1.6}
+.pmsg b{color:var(--tx)}
+#qbar{padding:5px 9px;border-bottom:1px solid var(--line);background:var(--hi);color:#23211d;font-size:12.5px;display:none}
+#qbar.show{display:block}
+/* ---- первый запуск ---- */
+#boot{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;align-items:center;justify-content:center}
+#boot .card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:22px 26px;max-width:620px}
+#boot h2{font:500 18px/1.3 inherit;margin:0 0 8px}
+#boot p{color:var(--tx2);margin:6px 0}
+.tr{margin:8px 0;padding:9px 11px;border:1px dashed var(--line2);border-radius:8px;background:var(--surf2);font-size:13.5px;white-space:pre-wrap;display:none}
+.tr.show{display:block}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:9px 0}
+#tagbox{display:none;position:absolute;z-index:9;background:var(--surf);border:1px solid var(--line2);border-radius:8px;padding:9px;max-width:620px;max-height:50vh;overflow:auto;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+.sv{font-size:12px;color:var(--tx3)}
+</style>
+</head>
+<body>
+<header>
+<h1>Заметки по статьям</h1>
+<input id="q" type="search" placeholder="поиск: дегидрин, Haimi, 2017, CK2…">
+<button id="btnNet">⚡ Для сети дегидринов</button>
+<div class="bar" title="прочитано"><i id="prog" style="width:0"></i></div>
+<span class="cnt" id="progTx"></span>
+<button id="btnPdf">PDF</button>
+<button id="btnDark" title="тёмная тема">◐</button>
+<button id="btnSave" title="сохранить файл заметок на диск">Сохранить файл</button>
+<button id="btnLoad" title="загрузить файл заметок">Загрузить</button>
+<span class="sv" id="sv"></span>
+<input id="fileData" type="file" accept=".json" hidden>
+</header>
+<main id="main">
+<div id="list">
+ <div class="filters">
+  <select id="fFolder"></select>
+  <select id="fStatus"><option value="">Все: прочитано и нет</option><option value="0">Не читала</option><option value="1">Читаю</option><option value="2">Прочитано</option><option value="01">Не прочитано</option></select>
+  <select id="fRel"><option value="">Любая важность</option><option value="3">★★★ главные</option><option value="23">★★ и выше</option></select>
+  <select id="fSort"><option value="rel">Сортировка: важность</option><option value="year">год</option><option value="au">автор</option><option value="folder">папка</option></select>
+  <button id="btnTags" class="mini">Теги</button>
+ </div>
+ <div class="cnt" id="cnt"></div>
+ <div id="items"></div>
+</div>
+<div id="note"></div>
+<div id="pdf">
+ <div class="pbar">
+  <button id="pPrev" class="mini">◀</button>
+  <input id="pIn" type="number" min="1" style="width:58px;padding:2px 4px;font-size:12px">
+  <span id="pTot">/ —</span>
+  <button id="pNext" class="mini">▶</button>
+  <span class="sep"></span>
+  <button id="pZo" class="mini">−</button><span id="pZt">100%</span><button id="pZi" class="mini">+</button>
+  <button id="pFit" class="mini">по ширине</button>
+  <span class="sep"></span>
+  <button id="pSel" class="mini" title="перевести выделенный в PDF текст">EN→RU выделенное</button>
+  <button id="pQuote" class="mini" title="сделать из выделенного текста цитату в заметке">В цитату</button>
+  <button id="pWide" class="mini" title="PDF на весь экран">⤢</button>
+  <button id="pFold" class="mini">Свернуть</button>
+ </div>
+ <div id="qbar"></div>
+ <div id="pwrap"><div id="pstage"><canvas id="pcv"></canvas><div id="ptext"></div></div></div>
+ <div class="pmsg" id="pmsg"></div>
+</div>
+</main>
+<div id="tagbox"></div>
+<div id="symbox"></div>
+<div id="boot"><div class="card">
+ <h2>Первый запуск</h2>
+ <p>Заметки хранятся у тебя на компьютере, в файле <b>notes_data.json</b> рядом с этой страницей. Загрузи его один раз — дальше страница будет помнить сама.</p>
+ <div class="row">
+  <button id="bLoad">Загрузить notes_data.json</button>
+  <button id="bEmpty">Начать с пустого</button>
+ </div>
+ <p class="sv">Файл никуда не уходит: всё остаётся в твоём браузере и на диске.</p>
+</div></div>
+<script src="pdfjs/pdf.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),E=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const LSget=k=>{try{return localStorage.getItem(k)}catch(e){return null}},LSset=(k,v)=>{try{localStorage.setItem(k,v);return 1}catch(e){return 0}};
+const KEY='dhn_doc_v2';
+let DOC=null, cur=null, netOnly=false, curTag='', files={}, dirty=false;
+
+/* ---------- хранение ---------- */
+let svT=null;
+function save(){dirty=true;$('#sv').textContent='…';clearTimeout(svT);svT=setTimeout(()=>{
+  const ok=LSset(KEY,JSON.stringify(DOC));
+  $('#sv').textContent=ok?'сохранено в браузере':'НЕ СОХРАНЕНО (место кончилось) — жми «Сохранить файл»';
+},500)}
+function loadDoc(j){
+  DOC=j; window.DOC=DOC; DOC.papers.forEach(p=>{p.status=p.status||0;p._h=hay(p)});
+  $('#boot').style.display='none'; buildFolders(); renderList();
+  if(DOC.papers.length)open_(DOC.papers[0]);
+}
+function hay(p){
+  return (p.title+' '+p.authors+' '+p.year+' '+(p.journal||'')+' '+p.tags.join(' ')+' '+p.file+' '+
+    p.blocks.map(b=>(b.x||'').replace(/<[^>]+>/g,' ')).join(' ')).toLowerCase();
+}
+/* ---------- список ---------- */
+function buildFolders(){
+  const f=$('#fFolder'); f.textContent=''; f.append(new Option('Все папки',''));
+  [...new Set(DOC.papers.map(p=>p.folder))].sort().forEach(x=>f.append(new Option(x+' ('+DOC.papers.filter(p=>p.folder===x).length+')',x)));
+}
+const isNet=p=>p.blocks.some(b=>b.t==='h'&&/сети DHN/i.test(b.x||''));
+function filtered(){
+  const q=$('#q').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const fo=$('#fFolder').value,ss=$('#fStatus').value,re=$('#fRel').value;
+  let r=DOC.papers.filter(p=>{
+    if(fo&&p.folder!==fo)return 0;
+    if(ss&&!ss.includes(String(p.status||0)))return 0;
+    if(re&&!re.includes(String(p.rel)))return 0;
+    if(netOnly&&!isNet(p))return 0;
+    if(curTag&&!p.tags.some(t=>t.toLowerCase()===curTag))return 0;
+    return q.every(w=>p._h.includes(w))});
+  const s=$('#fSort').value;
+  r.sort((a,b)=>s==='year'?(b.year+'').localeCompare(a.year+''):s==='au'?a.authors.localeCompare(b.authors,'ru')
+    :s==='folder'?(a.folder+a.title).localeCompare(b.folder+b.title,'ru'):(b.rel-a.rel)||a.title.localeCompare(b.title,'ru'));
+  return r;
+}
+function renderList(){
+  const r=filtered(),box=$('#items');box.textContent='';
+  $('#cnt').textContent=r.length+' из '+DOC.papers.length+(curTag?' · тег: '+curTag:'');
+  r.forEach(p=>{
+    const d=E('div','it'+(cur===p?' sel':''));d.append(E('div','dot d'+(p.status||0)));
+    const w=E('div');w.style.minWidth=0;
+    w.append(E('b',null,(p.authors.split(',')[0]||'').trim().split(' ')[0]+' '+p.year+' '+'★'.repeat(p.rel)),E('small',null,p.title.slice(0,92)));
+    d.append(w);d.onclick=()=>open_(p);box.append(d)});
+  const done=DOC.papers.filter(p=>p.status===2).length,rd=DOC.papers.filter(p=>p.status===1).length;
+  $('#prog').style.width=(done/DOC.papers.length*100).toFixed(1)+'%';
+  $('#progTx').textContent='прочитано '+done+' / '+DOC.papers.length+(rd?' · читаю '+rd:'');
+}
+['#q','#fFolder','#fStatus','#fRel','#fSort'].forEach(s=>$(s).addEventListener('input',renderList));
+$('#btnNet').onclick=e=>{netOnly=!netOnly;e.target.classList.toggle('on',netOnly);renderList()};
+$('#btnTags').onclick=e=>{
+  const tb=$('#tagbox');if(tb.style.display==='block'){tb.style.display='none';return}
+  const c={};DOC.papers.forEach(p=>p.tags.forEach(t=>c[t.toLowerCase()]=(c[t.toLowerCase()]||0)+1));
+  tb.textContent='';const b0=E('button',null,'сбросить тег');b0.onclick=()=>{curTag='';tb.style.display='none';renderList()};
+  tb.append(b0,document.createElement('br'));
+  Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,70).forEach(([t,n])=>{const s=E('span','tag',t+' ('+n+')');s.onclick=()=>{curTag=t;tb.style.display='none';renderList()};tb.append(s)});
+  const r=e.target.getBoundingClientRect();tb.style.left=Math.max(6,r.left-170)+'px';tb.style.top=(r.bottom+4)+'px';tb.style.display='block'};
+</script>
+<script>
+/* ---------- редактор блоков ---------- */
+const TYPES=[['p','Текст'],['h','Заголовок'],['li','Пункт'],['call','Голубая плашка'],['ok','Зелёная плашка'],['warn','Жёлтая плашка'],['quote','Цитата']];
+const SYMS='★ ⚡ → ← ↑ ↓ ⇒ • ✓ ✗ ⚠ ≈ ≤ ≥ ± × ÷ ° µ α β γ δ Δ λ σ ‰ ½ ² ³ ₂ ₃ « » — – … † ‡ № §'.split(' ');
+let focusIdx=-1;
+const clean=h=>{const d=document.createElement('div');d.innerHTML=h;
+  (function walk(n){[...n.childNodes].forEach(c=>{
+    if(c.nodeType===1){const t=c.tagName.toLowerCase();
+      if(!['b','strong','i','em','u','s','mark','sup','sub','br'].includes(t)){const f=document.createDocumentFragment();while(c.firstChild)f.append(c.firstChild);c.replaceWith(f);walk(n)}
+      else{[...c.attributes].forEach(a=>c.removeAttribute(a.name));walk(c)}}})})(d);
+  return d.innerHTML};
+
+function blockEl(p,b,i){
+  if(b.t==='img'){
+    const w=E('div','imgb');const im=E('img');im.src=b.src;w.append(im);
+    const g=E('div','row');const del=E('button','mini','удалить картинку');
+    del.onclick=()=>{p.blocks.splice(i,1);save();drawDoc(p)};g.append(del);w.append(g);return w}
+  const mk=()=>{
+    const e=E('div','blk '+(b.t==='quote'?'q':b.t)+(b.t==='h'&&/сети DHN/i.test(b.x||'')?' net':''));
+    e.contentEditable='true';e.innerHTML=b.x||'';e.dataset.i=i;
+    e.oninput=()=>{b.x=clean(e.innerHTML);p._h=hay(p);save()};
+    e.onfocus=()=>{focusIdx=i};
+    e.onpaste=ev=>{
+      const it=[...(ev.clipboardData||{}).items||[]].find(x=>x.type.startsWith('image/'));
+      if(it){ev.preventDefault();const f=it.getAsFile();const rd=new FileReader();
+        rd.onload=()=>{shrink(rd.result,img=>{p.blocks.splice(i+1,0,{t:'img',src:img});save();drawDoc(p)})};rd.readAsDataURL(f);return}
+      ev.preventDefault();const t=(ev.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,t)};
+    e.onkeydown=ev=>{
+      if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();
+        const nt=(b.t==='h'||b.t==='call'||b.t==='ok'||b.t==='warn')?'p':b.t;
+        p.blocks.splice(i+1,0,{t:nt,x:''});save();drawDoc(p,i+1)}
+      else if(ev.key==='Backspace'&&e.textContent===''&&p.blocks.length>1){ev.preventDefault();
+        p.blocks.splice(i,1);save();drawDoc(p,Math.max(0,i-1))}};
+    const g=E('div','gut');
+    const up=E('button',null,'↑');up.onmousedown=ev=>{ev.preventDefault();if(i>0){[p.blocks[i-1],p.blocks[i]]=[p.blocks[i],p.blocks[i-1]];save();drawDoc(p,i-1)}};
+    const dn=E('button',null,'↓');dn.onmousedown=ev=>{ev.preventDefault();if(i<p.blocks.length-1){[p.blocks[i+1],p.blocks[i]]=[p.blocks[i],p.blocks[i+1]];save();drawDoc(p,i+1)}};
+    const rm=E('button',null,'✕');rm.onmousedown=ev=>{ev.preventDefault();p.blocks.splice(i,1);save();drawDoc(p,Math.max(0,i-1))};
+    g.append(up,dn,rm);e.append(g);return e};
+  if(b.t==='quote'){
+    const row=E('div','qrow');const e=mk();
+    const pg=E('input','qpg');pg.type='number';pg.min=1;pg.value=b.p||1;pg.title='страница PDF';
+    pg.onchange=()=>{b.p=+pg.value||1;save()};
+    const go=E('button','mini','→ стр.');go.onclick=()=>openPdf(p,b.p||1,e.textContent);
+    row.append(e,pg,go);return row}
+  return mk();
+}
+function shrink(dataUrl,cb){const im=new Image();im.onload=()=>{const m=900,s=Math.min(1,m/im.width);
+  const c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.85))};im.src=dataUrl}
+
+function toolbar(p){
+  const tb=E('div','tb');
+  const sel=E('select');TYPES.forEach(([v,n])=>sel.append(new Option(n,v)));
+  sel.title='тип блока';sel.onchange=()=>{if(focusIdx<0)return;const b=p.blocks[focusIdx];b.t=sel.value;if(b.t==='quote'&&!b.p)b.p=1;save();drawDoc(p,focusIdx)};
+  tb.append(sel);
+  const add=(lbl,ti,fn)=>{const b=E('button','mini',lbl);b.title=ti;b.onmousedown=e=>e.preventDefault();b.onclick=fn;tb.append(b);return b};
+  add('Ж','жирный',()=>document.execCommand('bold'));
+  add('К','курсив',()=>document.execCommand('italic'));
+  add('x²','верхний индекс',()=>document.execCommand('superscript'));
+  add('x₂','нижний индекс',()=>document.execCommand('subscript'));
+  add('✎','выделить цветом',()=>{document.execCommand('hiliteColor',false,'#ffe9a8')});
+  tb.append(E('span','sep'));
+  add('+ блок','добавить блок ниже',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'p',x:''});save();drawDoc(p,i+1)});
+  add('+ плашка','добавить голубую плашку',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'call',x:''});save();drawDoc(p,i+1)});
+  add('+ цитата','добавить цитату со страницей',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'quote',x:'',p:1});save();drawDoc(p,i+1)});
+  add('Ω','вставить символ',e=>{
+    const sb=$('#symbox');if(sb.style.display==='block'){sb.style.display='none';return}
+    sb.textContent='';SYMS.forEach(s=>{const z=E('span',null,s);z.onmousedown=ev=>{ev.preventDefault();document.execCommand('insertText',false,s)};sb.append(z)});
+    const r=e.target.getBoundingClientRect();sb.style.left=Math.max(6,r.left-150)+'px';sb.style.top=(r.bottom+4)+'px';sb.style.display='block'});
+  return tb;
+}
+function drawDoc(p,focus){
+  const n=$('#note');const sc=n.scrollTop;n.textContent='';
+  const d=E('div','doc');
+  d.append(E('h2','ttl',p.title));
+  d.append(E('div','meta',p.authors+' · '+p.year+(p.journal?' · '+p.journal:'')+' · '+p.pages+' стр.'+(p.doi?' · doi '+p.doi:'')));
+  d.append(E('div','meta',p.folder+' / '+p.file.split('/').pop()));
+  const tg=E('div','tags');p.tags.forEach(t=>{const b=E('span','tag',t);b.onclick=()=>{curTag=t.toLowerCase();renderList()};tg.append(b)});
+  d.append(tg);
+  const r1=E('div','row');r1.append(E('span',null,'Статус:'));
+  ['Не читала','Читаю','Прочитано'].forEach((l,i)=>{const b=E('button',null,l);if((p.status||0)===i)b.classList.add('on');
+    b.onclick=()=>{p.status=i;save();renderList();drawDoc(p)};r1.append(b)});
+  const op=E('button',null,'Открыть PDF');op.onclick=()=>openPdf(p,1);r1.append(op);
+  const st=E('button',null,'★ важность '+p.rel);st.onclick=()=>{p.rel=p.rel%3+1;save();renderList();drawDoc(p)};r1.append(st);
+  d.append(r1);
+  d.append(toolbar(p));
+  p.blocks.forEach((b,i)=>d.append(blockEl(p,b,i)));
+  const addEnd=E('button','mini','+ добавить блок в конце');
+  addEnd.onclick=()=>{p.blocks.push({t:'p',x:''});save();drawDoc(p,p.blocks.length-1)};
+  const rEnd=E('div','row');rEnd.append(addEnd);d.append(rEnd);
+  /* переводчик */
+  d.append(Object.assign(E('div','blk h'),{contentEditable:'false',textContent:'Переводчик'}));
+  const out=E('div','tr');const r2=E('div','row');
+  const b1=E('button','mini','Заметку RU → EN');b1.onclick=async()=>{out.classList.add('show');out.textContent='перевожу…';out.textContent=await tr(plain(p),'ru','en')};
+  const b2=E('button','mini','Открыть в Google Переводчике');b2.onclick=()=>gt(plain(p),'ru','en');
+  r2.append(b1,b2);
+  const en=E('textarea');en.style.cssText='width:100%;min-height:60px;background:var(--surf);border:1px solid var(--line2);border-radius:8px;padding:8px';
+  en.placeholder='Вставь английский текст → EN → RU';
+  const r3=E('div','row');const b3=E('button','mini','EN → RU');
+  b3.onclick=async()=>{out.classList.add('show');out.textContent='перевожу…';out.textContent=await tr(en.value||'(пусто)','en','ru')};
+  const b4=E('button','mini','Перевод → в заметку');
+  b4.onclick=()=>{if(!out.textContent)return;p.blocks.push({t:'p',x:out.textContent});save();drawDoc(p,p.blocks.length-1)};
+  r3.append(b3,b4);
+  d.append(r2,en,r3,out);
+  n.append(d);n.scrollTop=sc;
+  if(focus!=null){const el=n.querySelector('.blk[data-i="'+focus+'"]');if(el){el.focus();
+    const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r)}}
+}
+function plain(p){return p.title+' — '+p.authors+' ('+p.year+')\n'+p.blocks.map(b=>(b.t==='h'?'\n':'')+(b.t==='li'?'- ':'')+(b.x||'').replace(/<[^>]+>/g,'')).join('\n')}
+function open_(p){cur=p;renderList();drawDoc(p);if(pdfOn||wide)openPdf(p,1)}
+</script>
+<script>
+/* ---------- PDF ---------- */
+let pdfOn=false,wide=false,scale=1.1,curDoc=null,curFile='',curPg=1,pendQ='';
+if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='pdfjs/pdf.worker.min.js';
+function layout(){$('#main').className=wide?'pdfmax':(pdfOn?'pdf':'');$('#btnPdf').classList.toggle('on',pdfOn||wide)}
+$('#btnPdf').onclick=()=>{pdfOn=!pdfOn;wide=false;layout();if(pdfOn&&cur)openPdf(cur,curPg)};
+$('#pFold').onclick=()=>{pdfOn=false;wide=false;layout()};
+$('#pWide').onclick=()=>{wide=!wide;pdfOn=true;layout();if(cur)render()};
+$('#pPrev').onclick=()=>{if(curPg>1){curPg--;render()}};
+$('#pNext').onclick=()=>{if(curDoc&&curPg<curDoc.numPages){curPg++;render()}};
+$('#pIn').onchange=()=>{const n=+$('#pIn').value;if(curDoc&&n>=1&&n<=curDoc.numPages){curPg=n;render()}};
+$('#pZi').onclick=()=>{scale=Math.min(4,scale*1.2);render()};
+$('#pZo').onclick=()=>{scale=Math.max(.25,scale/1.2);render()};
+$('#pFit').onclick=()=>fit();
+function msg(h){$('#pmsg').innerHTML='';if(h)$('#pmsg').append(h)}
+async function fileFor(p){
+  if(files[p.file])return files[p.file];
+  const base=p.file.split('/').pop();
+  for(const k in files)if(k.split('/').pop()===base)return files[k];
+  return null;
+}
+async function openPdf(p,page,quote){
+  if(!pdfOn&&!wide){pdfOn=true;layout()}
+  pendQ=quote||'';curPg=page||1;
+  const qb=$('#qbar');
+  if(quote){qb.textContent='';qb.append(E('span',null,'« '+quote+' »  '));
+    const t=E('button','mini','перевести');t.onclick=async()=>{t.textContent='…';const r=await tr(quote,'en','ru');t.replaceWith(E('i',null,' → '+r))};
+    qb.append(t);qb.classList.add('show')}else qb.classList.remove('show');
+  if(curFile===p.file&&curDoc){render();return}
+  curDoc=null;curFile=p.file;{const cx=$('#pcv').getContext('2d');if(cx)cx.clearRect(0,0,9999,9999)}$('#ptext').textContent='';
+  if(!window.pdfjsLib){msg(E('span',null,'Файлы pdfjs не найдены рядом со страницей.'));return}
+  const f=await fileFor(p);
+  try{
+    let src;
+    if(f)src={data:new Uint8Array(await f.arrayBuffer())};
+    else src={url:p.file.split('/').map(encodeURIComponent).join('/')};
+    curDoc=await pdfjsLib.getDocument(src).promise;
+    $('#pTot').textContent='/ '+curDoc.numPages;msg(null);render();
+  }catch(e){
+    curDoc=null;
+    const w=E('div');w.append(E('b',null,'PDF не открылся. '),E('span',null,'Браузер не пускает страницу к файлам на диске напрямую. Нажми «Подключить папку» и выбери ARTICLES — тогда PDF будут открываться здесь же, со страницей и подсветкой.'));
+    const r=E('div','row');r.append(btnFolder(),(()=>{const b=E('button','mini','Открыть в новой вкладке');b.onclick=()=>window.open(p.file.split('/').map(encodeURIComponent).join('/')+'#page='+curPg,'_blank');return b})());
+    w.append(r);msg(w)}
+}
+async function render(){
+  if(!curDoc)return;
+  const pg=await curDoc.getPage(curPg);
+  const vp=pg.getViewport({scale});
+  const cv=$('#pcv'),dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.floor(vp.width*dpr);cv.height=Math.floor(vp.height*dpr);
+  cv.style.width=vp.width+'px';cv.style.height=vp.height+'px';
+  $('#pstage').style.width=vp.width+'px';$('#pstage').style.height=vp.height+'px';
+  const ctx=cv.getContext('2d');if(!ctx)return;ctx.setTransform(dpr,0,0,dpr,0,0);
+  await pg.render({canvasContext:ctx,viewport:vp}).promise;
+  $('#pIn').value=curPg;$('#pTot').textContent='/ '+curDoc.numPages;$('#pZt').textContent=Math.round(scale*100)+'%';
+  const tl=$('#ptext');tl.textContent='';tl.style.width=vp.width+'px';tl.style.height=vp.height+'px';
+  const tc=await pg.getTextContent();const divs=[];
+  try{await pdfjsLib.renderTextLayer({textContentSource:tc,container:tl,viewport:vp,textDivs:divs}).promise}
+  catch(e){try{await pdfjsLib.renderTextLayer({textContent:tc,container:tl,viewport:vp,textDivs:divs}).promise}catch(e2){}}
+  if(pendQ)highlight(pendQ);
+}
+function highlight(q){
+  const spans=[...$('#ptext').querySelectorAll('span')];
+  let str='',map=[];
+  spans.forEach((el,i)=>{const t=(el.textContent||'').toLowerCase().replace(/[^a-z0-9\u0430-\u044f\u0451]/gi,'');
+    for(const ch of t){str+=ch;map.push(i)}});
+  const nq=(q||'').toLowerCase().replace(/[^a-z0-9\u0430-\u044f\u0451]/gi,'');
+  if(nq.length<6)return;
+  let k=-1;
+  for(const n of [24,16,12]){const h=nq.slice(0,n);if(h.length<7)continue;k=str.indexOf(h);if(k>=0)break}
+  if(k<0)return;
+  const tl=Math.min(20,Math.max(8,Math.floor(nq.length/3)));
+  let e=str.indexOf(nq.slice(-tl),k);
+  e=e>=0?e+tl:Math.min(str.length,k+nq.length);
+  const a=map[k],b=map[Math.min(map.length-1,e-1)];
+  for(let i=a;i<=b;i++)spans[i]&&spans[i].classList.add('hl');
+  if(spans[a])spans[a].scrollIntoView({block:'center'});
+}
+async function fit(){if(!curDoc)return;const pg=await curDoc.getPage(curPg);const v1=pg.getViewport({scale:1});
+  scale=Math.max(.25,($('#pwrap').clientWidth-28)/v1.width);render()}
+$('#pSel').onclick=async()=>{const t=(getSelection()+'').trim();if(!t)return alert('Сначала выдели текст в PDF.');
+  const qb=$('#qbar');qb.classList.add('show');qb.textContent='перевожу…';qb.textContent=await tr(t,'en','ru')};
+$('#pQuote').onclick=()=>{const t=(getSelection()+'').trim();if(!t||!cur)return alert('Сначала выдели текст в PDF.');
+  cur.blocks.push({t:'quote',x:t,p:curPg});save();drawDoc(cur,cur.blocks.length-1)};
+
+/* ---------- папка со статьями ---------- */
+function btnFolder(){
+  const b=E('button','mini','Подключить папку со статьями');
+  b.onclick=async()=>{
+    if(window.showDirectoryPicker){
+      try{const dir=await window.showDirectoryPicker();const out={};
+        const walk=async(d,pre)=>{for await(const [n,h] of d.entries()){const path=pre?pre+'/'+n:n;
+          if(h.kind==='file'&&n.toLowerCase().endsWith('.pdf'))out[path]=await h.getFile();else if(h.kind==='directory')await walk(h,path)}};
+        await walk(dir,'');files=out;afterFolder();return}catch(e){if(e&&e.name==='AbortError')return}
+    }
+    const inp=document.createElement('input');inp.type='file';inp.webkitdirectory=true;inp.multiple=true;
+    inp.onchange=()=>{const out={};[...inp.files].forEach(f=>{if(!f.name.toLowerCase().endsWith('.pdf'))return;
+      const rp=(f.webkitRelativePath||f.name).split('/').slice(1).join('/')||f.name;out[rp]=f});files=out;afterFolder()};
+    inp.click()};
+  return b;
+}
+function afterFolder(){
+  const n=Object.keys(files).length,hit=DOC?DOC.papers.filter(p=>files[p.file]).length:0;
+  msg(E('span',null,'Подключено PDF: '+n+' (совпало со списком: '+hit+').'));
+  curFile='';if(cur)openPdf(cur,curPg,pendQ);
+}
+</script>
+<script>
+/* ---------- перевод ---------- */
+async function tr(text,from,to){
+  try{const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl='+from+'&tl='+to+'&dt=t&q='+encodeURIComponent(text.slice(0,4800)));
+    const j=await r.json();return j[0].map(x=>x[0]).join('')}
+  catch(e){return '(нет связи с переводчиком — нажми «Открыть в Google Переводчике»)'}}
+const gt=(t,f,to)=>window.open('https://translate.google.com/?sl='+f+'&tl='+to+'&op=translate&text='+encodeURIComponent(t.slice(0,4800)),'_blank');
+
+/* ---------- файл данных ---------- */
+function download(name,text){const b=new Blob([text],{type:'application/json'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+let fileHandle=null;
+$('#btnSave').onclick=async()=>{
+  const txt=JSON.stringify(DOC);
+  if(window.showSaveFilePicker){
+    try{if(!fileHandle)fileHandle=await window.showSaveFilePicker({suggestedName:'notes_data.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]});
+      const w=await fileHandle.createWritable();await w.write(txt);await w.close();$('#sv').textContent='файл сохранён';return}
+    catch(e){if(e&&e.name==='AbortError')return}}
+  download('notes_data.json',txt);$('#sv').textContent='файл скачан — положи его рядом со страницей';
+};
+$('#btnLoad').onclick=()=>$('#fileData').click();
+$('#bLoad').onclick=()=>$('#fileData').click();
+$('#fileData').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const j=JSON.parse(r.result);
+      if(!j.papers)throw 0;
+      if(DOC&&DOC.papers.length){/* сохраняем мои правки: берём статус и блоки из нового файла только для новых статей */
+        const old={};DOC.papers.forEach(p=>old[p.file]=p);
+        j.papers.forEach(p=>{if(old[p.file]&&old[p.file]._edited)Object.assign(p,{blocks:old[p.file].blocks,status:old[p.file].status})})}
+      loadDoc(j);save();alert('Загружено статей: '+j.papers.length)}
+    catch(x){alert('Файл не читается.')}};
+  r.readAsText(f)};
+$('#bEmpty').onclick=()=>{loadDoc({v:2,papers:[]});$('#boot').style.display='none'};
+
+/* ---------- прочее ---------- */
+$('#btnDark').onclick=()=>{const d=document.documentElement.hasAttribute('data-dark');
+  d?document.documentElement.removeAttribute('data-dark'):document.documentElement.setAttribute('data-dark','');LSset('dhn_dark',d?'':'1')};
+if(LSget('dhn_dark'))document.documentElement.setAttribute('data-dark','');
+document.addEventListener('keydown',e=>{
+  if(/^(TEXTAREA|INPUT)$/.test(e.target.tagName)||e.target.isContentEditable)return;
+  if(!DOC)return;const r=filtered(),i=r.indexOf(cur);
+  if(e.key==='j'&&i<r.length-1)open_(r[i+1]);
+  if(e.key==='k'&&i>0)open_(r[i-1]);
+  if(e.key==='p')$('#btnPdf').click()});
+window.addEventListener('beforeunload',e=>{if(dirty){}});
+
+/* ---------- старт ---------- */
+(function(){
+  const raw=LSget(KEY);
+  if(raw){try{loadDoc(JSON.parse(raw));$('#sv').textContent='заметки из браузера';}catch(e){$('#boot').style.display='flex'}}
+  else $('#boot').style.display='flex';
+  msg((()=>{const w=E('div');w.append(E('span',null,'Чтобы PDF открывались прямо здесь: '));w.append(btnFolder());return w})());
+  layout();
+})();
+</script>
+</body>
+</html>

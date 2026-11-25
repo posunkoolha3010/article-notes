@@ -1,0 +1,5 @@
+# данные и статьи не публикуются
+notes_data.json
+*.pdf
+*.docx
+*.xlsx
