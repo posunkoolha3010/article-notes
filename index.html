@@ -108,6 +108,15 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 .tr.show{display:block}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:9px 0}
 #tagbox{display:none;position:absolute;z-index:9;background:var(--surf);border:1px solid var(--line2);border-radius:8px;padding:9px;max-width:620px;max-height:50vh;overflow:auto;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+#newsBtn{position:relative;padding:3px 8px}
+#newsBtn.dot:after{content:"";position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:#d85a30}
+#newsPanel{position:fixed;right:10px;top:46px;width:min(460px,94vw);max-height:76vh;overflow:auto;z-index:40;
+ background:var(--surf);border:1px solid var(--line2);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:12px 15px;display:none}
+#newsPanel.show{display:block}
+#newsPanel h3{font:500 15px/1.3 inherit;margin:0 0 6px;display:flex;align-items:center}
+#newsPanel h4{font:500 12.5px/1.3 inherit;color:var(--tx2);margin:12px 0 4px}
+#newsPanel ul{margin:0;padding-left:18px}
+#newsPanel li{margin:0 0 5px}
 .sv{font-size:12px;color:var(--tx3);flex:0 0 118px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #progTx{flex:0 0 162px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0}
 #symbox{line-height:1.5}
@@ -124,6 +133,7 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 <button id="btnPdf">PDF</button>
 <button id="btnFsm" title="уменьшить текст заметок">A−</button>
 <button id="btnFsp" title="увеличить текст заметок">A+</button>
+<button id="newsBtn" title="Что нового">✦</button>
 <select id="lang" title="язык интерфейса" style="padding:3px 5px;font-size:12px;width:62px"><option value="ru">RU</option><option value="en">EN</option><option value="lt">LT</option></select>
 <button id="btnDark" title="тёмная тема">◐</button>
 <button id="btnSave" title="сохранить файл заметок на диск">Сохранить файл</button>
@@ -217,7 +227,7 @@ const TR={en:{
 'Браузер не пускает страницу к файлам на диске напрямую. Нажми «Подключить папку» и выбери ARTICLES — тогда PDF будут открываться здесь же, со страницей и подсветкой.':'The browser does not let this page read files from disk directly. Click “Connect the articles folder” and choose ARTICLES — then PDFs open here, on the right page and with the quote highlighted.',
 'Файлы pdfjs не найдены рядом со страницей.':'The pdfjs files were not found next to this page.',
 'Браузер не поддерживает выбор папки. Открывай PDF кнопкой «Открыть в новой вкладке».':'This browser cannot pick a folder. Use “Open in a new tab” for PDFs.',
-'Первый запуск':'First run','Загрузить notes_data.json':'Load notes_data.json','Начать с пустого':'Start empty',
+'Что нового':'What’s new','Закрыть':'Close','Первый запуск':'First run','Загрузить notes_data.json':'Load notes_data.json','Начать с пустого':'Start empty',
 'Заметки хранятся у тебя на компьютере, в файле':'Your notes live on your own computer, in the file',
 'рядом с этой страницей. Загрузи его один раз — дальше страница будет помнить сама.':'next to this page. Load it once — after that the page remembers them itself.',
 'Файл никуда не уходит: всё остаётся в твоём браузере и на диске.':'Nothing is uploaded: everything stays in your browser and on your disk.',
@@ -261,7 +271,7 @@ const TR={en:{
 'Браузер не пускает страницу к файлам на диске напрямую. Нажми «Подключить папку» и выбери ARTICLES — тогда PDF будут открываться здесь же, со страницей и подсветкой.':'Naršyklė neleidžia šiam puslapiui tiesiogiai skaityti failų iš disko. Spausk „Prijungti straipsnių aplanką“ ir pasirink ARTICLES — tada PDF atsidarys čia pat, reikiamame puslapyje ir su paryškinta citata.',
 'Файлы pdfjs не найдены рядом со страницей.':'Šalia puslapio nerasti pdfjs failai.',
 'Браузер не поддерживает выбор папки. Открывай PDF кнопкой «Открыть в новой вкладке».':'Ši naršyklė nemoka pasirinkti aplanko. PDF atverk mygtuku „Atverti naujoje kortelėje“.',
-'Первый запуск':'Pirmas paleidimas','Загрузить notes_data.json':'Įkelti notes_data.json','Начать с пустого':'Pradėti nuo tuščio',
+'Что нового':'Kas naujo','Закрыть':'Uždaryti','Первый запуск':'Pirmas paleidimas','Загрузить notes_data.json':'Įkelti notes_data.json','Начать с пустого':'Pradėti nuo tuščio',
 'Заметки хранятся у тебя на компьютере, в файле':'Užrašai laikomi tavo kompiuteryje, faile',
 'рядом с этой страницей. Загрузи его один раз — дальше страница будет помнить сама.':'šalia šio puslapio. Įkelk jį vieną kartą — toliau puslapis prisimins pats.',
 'Файл никуда не уходит: всё остаётся в твоём браузере и на диске.':'Niekas niekur nesiunčiama: viskas lieka tavo naršyklėje ir diske.',
@@ -693,6 +703,8 @@ function applyLang(){
   $('#btnLoad').textContent=T('Загрузить');$('#btnLoad').title=T('загрузить файл заметок');
   $('#btnFsm').title=T('уменьшить текст заметок');$('#btnFsp').title=T('увеличить текст заметок');
   $('#btnDark').title=T('тёмная тема');
+  $('#newsBtn').title=T('Что нового');
+  if(window._newsRender&&$('#newsPanel')&&$('#newsPanel').classList.contains('show'))window._newsRender();
   opts($('#fStatus'),[['',"Все: прочитано и нет"],['0','Не читала'],['1','Читаю'],['2','Прочитано'],['01','Не прочитано']]);
   opts($('#fRel'),[['','Любая важность'],['3','★★★ главные'],['23','★★ и выше']]);
   opts($('#fSort'),[['rel','Сортировка: важность'],['year','год'],['au','автор'],['folder','папка']]);
@@ -724,3 +736,63 @@ $('#lang').onchange=()=>{L=$('#lang').value;LSset('dhn_lang',L);applyLang()};
 </script>
 </body>
 </html>
+<script>
+/* ---------- что нового ---------- */
+const CHANGELOG=[
+{d:'2026-11-25',
+ ru:['Страница заметок: 138 статей из папки, поиск по словам, авторам, годам и ключевым словам, фильтры по папке, важности и прочитанному',
+  'Заметки по каждой статье: коротко суть, что нашли, чем полезно, плюс цитаты из текста со ссылкой на страницу PDF',
+  'Редактор блоками: заголовки, пункты, цветные плашки, цитаты, картинки через Ctrl+V; блоки можно двигать и удалять',
+  'Цвет плашек — восемь цветов для любого блока; размер текста отдельно у блока и у всей панели',
+  'Просмотр PDF движком pdf.js: только страница статьи, масштаб и «по ширине», выделение текста, подсветка нужной цитаты',
+  'Шкала прочитанного: «Не читала / Читаю / Прочитано» и полоса сверху',
+  'Ключевые слова можно добавлять, переименовывать и удалять, искать по ним и фильтровать список',
+  'Переводчик на английский, литовский и русский — заметки, вставленный текст и выделенное в PDF',
+  '153 символа и значка в шести группах (наука, стрелки, растения и холод, рабочие значки)',
+  'Интерфейс на русском, английском и литовском',
+  'Заметки хранятся в твоём файле notes_data.json на компьютере: сама программа пустая, на GitHub твоих данных нет',
+  'Исправлено: выделение текста в PDF ложилось мимо строк; строка поиска дёргалась при сохранении; кнопки блока налезали на текст'],
+ en:['Notes page: 138 papers from the folder, search by words, authors, years and keywords, filters by folder, importance and reading progress',
+  'Notes for every paper: the gist, what was found, why it is useful, plus quotes from the text linked to a PDF page',
+  'Block editor: headings, bullets, colour blocks, quotes, images pasted with Ctrl+V; blocks can be moved and deleted',
+  'Eight block colours for any block; text size set separately for a block and for the whole panel',
+  'PDF viewer built on pdf.js: the article page only, zoom and fit to width, selectable text, the quote highlighted',
+  'Reading progress: “Not read / Reading / Read” and a bar at the top',
+  'Keywords can be added, renamed and removed, searched and used as a filter',
+  'Translator into English, Lithuanian and Russian — notes, pasted text and text selected in the PDF',
+  '153 symbols and icons in six groups (science, arrows, plants and cold, work icons)',
+  'Interface in Russian, English and Lithuanian',
+  'Notes live in your own notes_data.json on your computer: the app itself is empty and none of your data is on GitHub',
+  'Fixed: text selection in the PDF landed off the lines; the search box jumped while saving; block buttons overlapped the text'],
+ lt:['Užrašų puslapis: 138 straipsniai iš aplanko, paieška pagal žodžius, autorius, metus ir raktažodžius, filtrai pagal aplanką, svarbumą ir skaitymo būseną',
+  'Užrašai kiekvienam straipsniui: esmė, ką rado, kuo naudinga, ir citatos su nuoroda į PDF puslapį',
+  'Blokų redaktorius: antraštės, punktai, spalvoti blokai, citatos, paveikslėliai per Ctrl+V; blokus galima perkelti ir ištrinti',
+  'Aštuonios blokų spalvos bet kuriam blokui; teksto dydis atskirai blokui ir visam skydeliui',
+  'PDF peržiūra su pdf.js: tik straipsnio puslapis, mastelis ir „pagal plotį“, teksto žymėjimas, paryškinta citata',
+  'Skaitymo būsena: „Neskaityta / Skaitau / Perskaityta“ ir juosta viršuje',
+  'Raktažodžius galima pridėti, pervadinti ir pašalinti, jų ieškoti ir pagal juos filtruoti',
+  'Vertėjas į anglų, lietuvių ir rusų kalbas — užrašai, įklijuotas tekstas ir PDF pažymėtas tekstas',
+  '153 simboliai ir ženklai šešiose grupėse (mokslas, rodyklės, augalai ir šaltis, darbo ženklai)',
+  'Sąsaja rusų, anglų ir lietuvių kalbomis',
+  'Užrašai laikomi tavo faile notes_data.json kompiuteryje: pati programa tuščia, GitHub tavo duomenų nėra',
+  'Pataisyta: teksto žymėjimas PDF nesutapo su eilutėmis; paieškos laukas šokinėjo išsaugant; blokų mygtukai užlipdavo ant teksto']}
+];
+(()=>{
+ const btn=$('#newsBtn'),pan=E('div');pan.id='newsPanel';document.body.append(pan);
+ const LOC={ru:'ru-RU',en:'en-GB',lt:'lt-LT'};
+ const latest=CHANGELOG[0].d;
+ btn.classList.toggle('dot',(LSget('dhn_news')||'')<latest);
+ const render=()=>{pan.textContent='';
+   const h=E('h3');h.append(E('span',null,T('Что нового')));
+   const x=E('button','mini','✕');x.title=T('Закрыть');x.style.marginLeft='auto';x.onclick=()=>pan.classList.remove('show');
+   h.append(x);pan.append(h);
+   CHANGELOG.forEach(day=>{
+     let dt=day.d;try{dt=new Date(day.d+'T12:00:00').toLocaleDateString(LOC[L]||'en-GB',{day:'numeric',month:'long',year:'numeric'})}catch(e){}
+     pan.append(E('h4',null,dt));
+     const ul=E('ul');(day[L]||day.en).forEach(s=>ul.append(E('li',null,s)));pan.append(ul)})};
+ btn.onclick=()=>{if(pan.classList.toggle('show')){render();btn.classList.remove('dot');LSset('dhn_news',latest)}};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')pan.classList.remove('show')});
+ $('#lang').addEventListener('change',()=>{if(pan.classList.contains('show'))render()});
+ window._newsRender=render;
+})();
+</script>
