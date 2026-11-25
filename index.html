@@ -36,7 +36,7 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 .dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:5px;border:1px solid var(--line2)}
 .d0{background:transparent}.d1{background:var(--warn);border-color:var(--warn)}.d2{background:var(--ok);border-color:var(--ok)}
 /* ---- редактор ---- */
-.doc{max-width:860px}
+.doc{max-width:860px;margin-left:46px}
 .ttl{font:500 19px/1.35 inherit;margin:0 0 3px}
 .meta{color:var(--tx2);font-size:13px}
 .tags{margin:7px 0;display:flex;flex-wrap:wrap;gap:4px}
@@ -58,7 +58,7 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 .qrow{display:flex;gap:6px;align-items:flex-start;margin:4px 0 4px 26px}
 .qrow .blk{flex:1;border-left:2px solid var(--acc);border-radius:0 6px 6px 0;background:var(--accbg);color:var(--acc);font-style:italic;font-size:13px;padding-left:10px}
 .qpg{width:62px;padding:2px 4px;font-size:12px}
-.gut{position:absolute;left:2px;top:2px;display:none;gap:2px}
+.gut{position:absolute;left:-46px;top:1px;display:none;gap:2px}
 .blk:hover .gut,.blk:focus .gut{display:flex}
 .gut button{padding:0 4px;font-size:11px;line-height:1.5;border-radius:4px}
 .imgb{margin:8px 0 8px 26px;max-width:100%}
@@ -72,10 +72,13 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 #pwrap{flex:1;overflow:auto;display:flex;justify-content:center;padding:10px;background:var(--surf2)}
 #pstage{position:relative;box-shadow:0 2px 10px rgba(0,0,0,.14);height:max-content;background:#fff}
 #pcv{display:block}
-#ptext{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:1}
-#ptext span{position:absolute;white-space:pre;transform-origin:0 0;color:transparent;cursor:text}
+#ptext{position:absolute;text-align:initial;inset:0;overflow:hidden;line-height:1;transform-origin:0 0;
+ -webkit-text-size-adjust:none;text-size-adjust:none;forced-color-adjust:none}
+#ptext span,#ptext br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0 0;margin:0}
 #ptext span.hl{background:var(--mark);border-radius:2px}
-#ptext ::selection{background:rgba(24,95,165,.35)}
+#ptext ::selection{background:rgba(24,95,165,.33)}
+#ptext .endOfContent{display:block;position:absolute;left:0;top:100%;right:0;bottom:0;z-index:-1;cursor:default;user-select:none}
+#ptext.selecting .endOfContent{top:0}
 .pmsg{padding:14px;color:var(--tx2);font-size:13px;line-height:1.6}
 .pmsg b{color:var(--tx)}
 #qbar{padding:5px 9px;border-bottom:1px solid var(--line);background:var(--hi);color:#23211d;font-size:12.5px;display:none}
@@ -382,6 +385,7 @@ async function render(){
   await pg.render({canvasContext:ctx,viewport:vp}).promise;
   $('#pIn').value=curPg;$('#pTot').textContent='/ '+curDoc.numPages;$('#pZt').textContent=Math.round(scale*100)+'%';
   const tl=$('#ptext');tl.textContent='';tl.style.width=vp.width+'px';tl.style.height=vp.height+'px';
+  $('#pstage').style.setProperty('--scale-factor',scale);tl.style.setProperty('--scale-factor',scale);
   const tc=await pg.getTextContent();const divs=[];
   try{await pdfjsLib.renderTextLayer({textContentSource:tc,container:tl,viewport:vp,textDivs:divs}).promise}
   catch(e){try{await pdfjsLib.renderTextLayer({textContent:tc,container:tl,viewport:vp,textDivs:divs}).promise}catch(e2){}}
