@@ -6,9 +6,11 @@
 <title>Заметки по статьям</title>
 <style>
 :root{--bg:#f7f6f3;--surf:#fff;--surf2:#f1efe9;--line:#e2dfd6;--line2:#cfcabb;--tx:#23211d;--tx2:#6b6760;--tx3:#938d82;
---acc:#185fa5;--accbg:#e6f1fb;--warn:#854f0b;--warnbg:#faeeda;--ok:#3b6d11;--okbg:#eaf3de;--hi:#ffe9a8;--mark:rgba(255,196,0,.45)}
+--acc:#185fa5;--accbg:#e6f1fb;--warn:#854f0b;--warnbg:#faeeda;--ok:#3b6d11;--okbg:#eaf3de;--hi:#ffe9a8;--mark:rgba(255,196,0,.45);
+--pinkbg:#fbeaf0;--violetbg:#eeedfe;--tealbg:#e1f5ee;--graybg:#efede7}
 html[data-dark]{--bg:#1b1b1a;--surf:#232322;--surf2:#2b2b29;--line:#383835;--line2:#4a4a46;--tx:#eceae5;--tx2:#a8a49c;--tx3:#817d75;
---acc:#85b7eb;--accbg:#143047;--warn:#fac775;--warnbg:#3a2b10;--ok:#c0dd97;--okbg:#22300f;--hi:#5b4a14}
+--acc:#85b7eb;--accbg:#143047;--warn:#fac775;--warnbg:#3a2b10;--ok:#c0dd97;--okbg:#22300f;--hi:#5b4a14;
+--pinkbg:#3a1c28;--violetbg:#241f3f;--tealbg:#123029;--graybg:#2f2f2c}
 *{box-sizing:border-box}
 body{margin:0;font:14px/1.55 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--tx);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 button,select,input,textarea{font:inherit;color:inherit}
@@ -51,10 +53,18 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 .blk.h.net{color:var(--acc)}
 .blk.li{padding-left:34px}
 .blk.li:before{content:"•";position:absolute;left:19px;color:var(--tx3)}
-.blk.call{background:var(--accbg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:6px 0}
-.blk.call:hover,.blk.call:focus{filter:brightness(.985)}
-.blk.warn{background:var(--warnbg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:6px 0;color:var(--warn)}
-.blk.ok{background:var(--okbg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:6px 0;color:var(--ok)}
+.blk[data-c]{border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:6px 0}
+.blk[data-c]:hover,.blk[data-c]:focus{filter:brightness(.98)}
+.blk[data-c="blue"]{background:var(--accbg)}
+.blk[data-c="green"]{background:var(--okbg)}
+.blk[data-c="yellow"]{background:var(--warnbg)}
+.blk[data-c="pink"]{background:var(--pinkbg)}
+.blk[data-c="violet"]{background:var(--violetbg)}
+.blk[data-c="teal"]{background:var(--tealbg)}
+.blk[data-c="gray"]{background:var(--graybg)}
+.blk.s-2{font-size:.82em}.blk.s-1{font-size:.91em}.blk.s1{font-size:1.12em}.blk.s2{font-size:1.28em}.blk.s3{font-size:1.5em}
+.sw{width:19px;height:19px;border-radius:5px;border:1px solid var(--line2);cursor:pointer;padding:0}
+.sw:hover{border-color:var(--acc)}
 .qrow{display:flex;gap:6px;align-items:flex-start;margin:4px 0 4px 26px}
 .qrow .blk{flex:1;border-left:2px solid var(--acc);border-radius:0 6px 6px 0;background:var(--accbg);color:var(--acc);font-style:italic;font-size:13px;padding-left:10px}
 .qpg{width:62px;padding:2px 4px;font-size:12px}
@@ -103,6 +113,8 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 <div class="bar" title="прочитано"><i id="prog" style="width:0"></i></div>
 <span class="cnt" id="progTx"></span>
 <button id="btnPdf">PDF</button>
+<button id="btnFsm" title="уменьшить текст заметок">A−</button>
+<button id="btnFsp" title="увеличить текст заметок">A+</button>
 <button id="btnDark" title="тёмная тема">◐</button>
 <button id="btnSave" title="сохранить файл заметок на диск">Сохранить файл</button>
 <button id="btnLoad" title="загрузить файл заметок">Загрузить</button>
@@ -167,7 +179,11 @@ function save(){dirty=true;$('#sv').textContent='…';clearTimeout(svT);svT=setT
   $('#sv').textContent=ok?'сохранено в браузере':'НЕ СОХРАНЕНО (место кончилось) — жми «Сохранить файл»';
 },500)}
 function loadDoc(j){
-  DOC=j; window.DOC=DOC; DOC.papers.forEach(p=>{p.status=p.status||0;p._h=hay(p)});
+  DOC=j; window.DOC=DOC;
+  const MIG={call:'blue',ok:'green',warn:'yellow'};
+  DOC.papers.forEach(p=>{p.status=p.status||0;
+    p.blocks.forEach(b=>{if(MIG[b.t]){b.c=b.c||MIG[b.t];b.t='p'}});
+    p._h=hay(p)});
   $('#boot').style.display='none'; buildFolders(); renderList();
   if(DOC.papers.length)open_(DOC.papers[0]);
 }
@@ -220,7 +236,10 @@ $('#btnTags').onclick=e=>{
 </script>
 <script>
 /* ---------- редактор блоков ---------- */
-const TYPES=[['p','Текст'],['h','Заголовок'],['li','Пункт'],['call','Голубая плашка'],['ok','Зелёная плашка'],['warn','Жёлтая плашка'],['quote','Цитата']];
+const TYPES=[['p','Текст'],['h','Заголовок'],['li','Пункт'],['quote','Цитата']];
+const COLORS=[['','без цвета','transparent'],['blue','голубая','var(--accbg)'],['green','зелёная','var(--okbg)'],
+ ['yellow','жёлтая','var(--warnbg)'],['pink','розовая','var(--pinkbg)'],['violet','сиреневая','var(--violetbg)'],
+ ['teal','бирюзовая','var(--tealbg)'],['gray','серая','var(--graybg)']];
 const SYMS='★ ⚡ → ← ↑ ↓ ⇒ • ✓ ✗ ⚠ ≈ ≤ ≥ ± × ÷ ° µ α β γ δ Δ λ σ ‰ ½ ² ³ ₂ ₃ « » — – … † ‡ № §'.split(' ');
 let focusIdx=-1;
 const clean=h=>{const d=document.createElement('div');d.innerHTML=h;
@@ -236,7 +255,8 @@ function blockEl(p,b,i){
     const g=E('div','row');const del=E('button','mini','удалить картинку');
     del.onclick=()=>{p.blocks.splice(i,1);save();drawDoc(p)};g.append(del);w.append(g);return w}
   const mk=()=>{
-    const e=E('div','blk '+(b.t==='quote'?'q':b.t)+(b.t==='h'&&/сети DHN/i.test(b.x||'')?' net':''));
+    const e=E('div','blk '+(b.t==='quote'?'q':b.t)+(b.t==='h'&&/сети DHN/i.test(b.x||'')?' net':'')+(b.s?' s'+b.s:''));
+    if(b.c)e.dataset.c=b.c;
     e.contentEditable='true';e.innerHTML=b.x||'';e.dataset.i=i;
     e.oninput=()=>{b.x=clean(e.innerHTML);p._h=hay(p);save()};
     e.onfocus=()=>{focusIdx=i};
@@ -247,7 +267,7 @@ function blockEl(p,b,i){
       ev.preventDefault();const t=(ev.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,t)};
     e.onkeydown=ev=>{
       if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();
-        const nt=(b.t==='h'||b.t==='call'||b.t==='ok'||b.t==='warn')?'p':b.t;
+        const nt=(b.t==='h'||b.c)?'p':b.t;
         p.blocks.splice(i+1,0,{t:nt,x:''});save();drawDoc(p,i+1)}
       else if(ev.key==='Backspace'&&e.textContent===''&&p.blocks.length>1){ev.preventDefault();
         p.blocks.splice(i,1);save();drawDoc(p,Math.max(0,i-1))}};
@@ -281,8 +301,17 @@ function toolbar(p){
   add('✎','выделить цветом',()=>{document.execCommand('hiliteColor',false,'#ffe9a8')});
   tb.append(E('span','sep'));
   add('+ блок','добавить блок ниже',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'p',x:''});save();drawDoc(p,i+1)});
-  add('+ плашка','добавить голубую плашку',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'call',x:''});save();drawDoc(p,i+1)});
+  add('+ плашка','добавить цветную плашку',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'p',x:'',c:'blue'});save();drawDoc(p,i+1)});
   add('+ цитата','добавить цитату со страницей',()=>{const i=focusIdx<0?p.blocks.length-1:focusIdx;p.blocks.splice(i+1,0,{t:'quote',x:'',p:1});save();drawDoc(p,i+1)});
+  tb.append(E('span','sep'));
+  COLORS.forEach(([v,n,bg])=>{const b=E('button','sw');b.title='плашка: '+n;b.style.background=bg;
+    if(!v)b.textContent='—',b.style.fontSize='11px',b.style.lineHeight='17px';
+    b.onmousedown=ev=>ev.preventDefault();
+    b.onclick=()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];if(v)bl.c=v;else delete bl.c;save();drawDoc(p,focusIdx)};
+    tb.append(b)});
+  tb.append(E('span','sep'));
+  add('A−','мельче этот блок',()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];bl.s=Math.max(-2,(bl.s||0)-1);if(!bl.s)delete bl.s;save();drawDoc(p,focusIdx)});
+  add('A+','крупнее этот блок',()=>{if(focusIdx<0)return;const bl=p.blocks[focusIdx];bl.s=Math.min(3,(bl.s||0)+1);if(!bl.s)delete bl.s;save();drawDoc(p,focusIdx)});
   add('Ω','вставить символ',e=>{
     const sb=$('#symbox');if(sb.style.display==='block'){sb.style.display='none';return}
     sb.textContent='';SYMS.forEach(s=>{const z=E('span',null,s);z.onmousedown=ev=>{ev.preventDefault();document.execCommand('insertText',false,s)};sb.append(z)});
@@ -471,6 +500,11 @@ $('#fileData').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new F
 $('#bEmpty').onclick=()=>{loadDoc({v:2,papers:[]});$('#boot').style.display='none'};
 
 /* ---------- прочее ---------- */
+let FS=+(LSget('dhn_fs')||14);
+function applyFs(){FS=Math.max(11,Math.min(26,FS));$('#note').style.fontSize=FS+'px';LSset('dhn_fs',FS)}
+$('#btnFsm').onclick=()=>{FS-=1;applyFs()};
+$('#btnFsp').onclick=()=>{FS+=1;applyFs()};
+applyFs();
 $('#btnDark').onclick=()=>{const d=document.documentElement.hasAttribute('data-dark');
   d?document.documentElement.removeAttribute('data-dark'):document.documentElement.setAttribute('data-dark','');LSset('dhn_dark',d?'':'1')};
 if(LSget('dhn_dark'))document.documentElement.setAttribute('data-dark','');
