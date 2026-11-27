@@ -112,7 +112,7 @@ main.pdfmax{grid-template-columns:0 0 minmax(0,1fr)}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:9px 0}
 #tagbox{display:none;position:absolute;z-index:9;background:var(--surf);border:1px solid var(--line2);border-radius:8px;padding:9px;max-width:620px;max-height:50vh;overflow:auto;box-shadow:0 6px 24px rgba(0,0,0,.14)}
 #newsBtn{position:relative;padding:3px 8px}
-#newsBtn.dot:after{content:"";position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:#d85a30}
+#newsBtn.newdot:after{content:"";position:absolute;top:1px;right:1px;width:7px;height:7px;border-radius:50%;background:#d85a30}
 #newsPanel{position:fixed;right:10px;top:46px;width:min(460px,94vw);max-height:76vh;overflow:auto;z-index:40;
  background:var(--surf);border:1px solid var(--line2);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:12px 15px;display:none}
 #newsPanel.show{display:block}
@@ -750,6 +750,10 @@ $('#lang').onchange=()=>{L=$('#lang').value;LSset('dhn_lang',L);applyLang()};
 <script>
 /* ---------- что нового ---------- */
 const CHANGELOG=[
+{d:'2026-11-27',
+ ru:['Исправлено: кнопка «Что нового» ломалась, когда на ней была красная точка — она превращалась в маленький кружок, а значок вылезал наружу. Точка и кружки «прочитано» в списке статей случайно использовали одно и то же имя стиля'],
+ en:['Fixed: the “What’s new” button broke while the red dot was on it — the button shrank to a small circle and the icon spilled out. The dot and the read-status circles in the paper list happened to share one style name'],
+ lt:['Pataisyta: mygtukas „Kas naujo“ sugesdavo, kai ant jo buvo raudonas taškas — mygtukas susitraukdavo į mažą skritulį, o ženklas iškrisdavo. Taškas ir skaitymo būsenos skrituliai sąraše netyčia naudojo tą patį stiliaus pavadinimą']},
 {d:'2026-11-25',
  ru:['Страница заметок: 138 статей из папки, поиск по словам, авторам, годам и ключевым словам, фильтры по папке, важности и прочитанному',
   'Заметки по каждой статье: коротко суть, что нашли, чем полезно, плюс цитаты из текста со ссылкой на страницу PDF',
@@ -801,7 +805,7 @@ const CHANGELOG=[
  const btn=$('#newsBtn'),pan=E('div');pan.id='newsPanel';document.body.append(pan);
  const LOC={ru:'ru-RU',en:'en-GB',lt:'lt-LT'};
  const latest=CHANGELOG[0].d;
- btn.classList.toggle('dot',(LSget('dhn_news')||'')<latest);
+ btn.classList.toggle('newdot',(LSget('dhn_news')||'')<latest);
  const render=()=>{pan.textContent='';
    const h=E('h3');h.append(E('span',null,T('Что нового')));
    const x=E('button','mini','✕');x.title=T('Закрыть');x.style.marginLeft='auto';x.onclick=()=>pan.classList.remove('show');
@@ -810,7 +814,7 @@ const CHANGELOG=[
      let dt=day.d;try{dt=new Date(day.d+'T12:00:00').toLocaleDateString(LOC[L]||'en-GB',{day:'numeric',month:'long',year:'numeric'})}catch(e){}
      pan.append(E('h4',null,dt));
      const ul=E('ul');(day[L]||day.en).forEach(s=>ul.append(E('li',null,s)));pan.append(ul)})};
- btn.onclick=()=>{if(pan.classList.toggle('show')){render();btn.classList.remove('dot');LSset('dhn_news',latest)}};
+ btn.onclick=()=>{if(pan.classList.toggle('show')){render();btn.classList.remove('newdot');LSset('dhn_news',latest)}};
  document.addEventListener('keydown',e=>{if(e.key==='Escape')pan.classList.remove('show')});
  $('#lang').addEventListener('change',()=>{if(pan.classList.contains('show'))render()});
  window._newsRender=render;
